@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+python-dotenv
+numpy
+torch --index-url https://download.pytorch.org/whl/cpu
+pymysql
+python-multipart

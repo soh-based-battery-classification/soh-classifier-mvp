@@ -1,0 +1,6 @@
+# 학습 스크립트 전용 의존성 (서비스 런타임 requirements.txt에는 불필요).
+# backend/requirements.txt 설치 후 이것도 추가로 설치.
+scipy
+pandas
+scikit-learn
+matplotlib
