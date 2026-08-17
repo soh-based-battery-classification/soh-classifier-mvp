@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.db
+
+# Node
+node_modules/
+dist/
+
+# Env
+.env
+
+# NASA 원본 .mat 데이터 (배터리당 8~16MB, 재다운로드/재업로드로 복구 가능하므로 git에는 미포함)
+backend/training/data/raw/*.mat
+
+# OS
+.DS_Store

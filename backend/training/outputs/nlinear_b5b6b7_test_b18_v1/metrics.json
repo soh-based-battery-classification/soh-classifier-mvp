@@ -1,0 +1,54 @@
+{
+  "regression": {
+    "mse": 1.3805468082427979,
+    "rmse": 1.1749666929244995,
+    "mae": 0.7431451678276062,
+    "mape": 0.9696642868220806
+  },
+  "classification": {
+    "accuracy": 0.9482758620689655,
+    "macro_f1": 0.7098861283643892,
+    "labels": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        41,
+        0,
+        0
+      ],
+      [
+        0,
+        2,
+        43,
+        2
+      ],
+      [
+        0,
+        0,
+        2,
+        26
+      ]
+    ]
+  },
+  "best_epoch": 20,
+  "n_train_windows": 381,
+  "n_val_windows": 75,
+  "n_test_windows": 116,
+  "train_batteries": [
+    "B0005",
+    "B0006",
+    "B0007"
+  ],
+  "test_battery": "B0018"
+}
