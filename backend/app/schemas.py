@@ -63,6 +63,24 @@ class FinalStateOut(BaseModel):
     decided_at: Optional[datetime.datetime]
 
 
+class DetectionObjectOut(BaseModel):
+    class_name: str
+    confidence: float
+    bbox_x: float
+    bbox_y: float
+    bbox_w: float
+    bbox_h: float
+
+
+class DetectionResultOut(BaseModel):
+    id: int
+    pack_id: str
+    detected_at: datetime.datetime
+    model_version: str
+    visual_severity: str
+    objects: list[DetectionObjectOut]
+
+
 class PackDetailOut(BaseModel):
     pack: PackOut
     cycle_logs: list[CycleLogOut]

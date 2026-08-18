@@ -2,7 +2,7 @@ import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../api";
 import GradeBadge from "../components/GradeBadge";
-import type { PackDetail as PackDetailType, VisualSeverity } from "../types";
+import type { DetectionResult, PackDetail as PackDetailType, VisualSeverity } from "../types";
 
 export default function PackDetail() {
   const { packId } = useParams<{ packId: string }>();
@@ -17,10 +17,17 @@ export default function PackDetail() {
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [detecting, setDetecting] = useState(false);
+  const [lastDetection, setLastDetection] = useState<DetectionResult | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
   async function reload() {
-    if (!packId) return;
+    if (!packId) return null;
     const data = await api.getPack(packId);
     setDetail(data);
+    return data;
   }
 
   useEffect(() => {
@@ -117,11 +124,44 @@ export default function PackDetail() {
     setBusy(true);
     try {
       await api.setVisualSeverity(packId, severity);
-      await reload();
+      const fresh = await reload();
+      if (fresh?.final_state?.final_grade) {
+        navigate(`/packs/${packId}/result`, { state: { detail: fresh, detection: null } });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setBusy(false);
+    }
+  }
+
+  function handleImageSelect(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+    setLastDetection(null);
+    setImagePreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return file ? URL.createObjectURL(file) : null;
+    });
+  }
+
+  async function handleImageUpload() {
+    if (!packId || !imageFile) return;
+    setError(null);
+    setDetecting(true);
+    try {
+      const result = await api.detectImage(packId, imageFile);
+      setLastDetection(result);
+      setImageFile(null);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      const fresh = await reload();
+      if (fresh?.final_state?.final_grade) {
+        navigate(`/packs/${packId}/result`, { state: { detail: fresh, detection: result } });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setDetecting(false);
     }
   }
 
@@ -157,8 +197,42 @@ export default function PackDetail() {
           {detail.final_state?.final_state ? ` · ${detail.final_state.final_state}` : ""}
         </p>
         <p className="hint-text">
-          객체탐지(YOLO) 서비스가 아직 연결되지 않아, 아래 버튼으로 외형 상태를 임시 지정해
-          등급 오버라이드 로직을 테스트할 수 있습니다.
+          팩 사진을 올리면 YOLO가 부품을 탐지해 외형 상태를 자동으로 판정합니다. (핵심 구조
+          부품이 하나라도 안 잡히면 CRITICAL, 다 잡혔지만 평균 신뢰도가 낮으면 MODERATE — 아직
+          임시 규칙입니다.)
+        </p>
+        <div className="inline-form">
+          <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} />
+          <button disabled={detecting || !imageFile} onClick={handleImageUpload}>
+            {detecting ? "탐지 중..." : "사진 업로드 & 탐지"}
+          </button>
+        </div>
+        {imagePreviewUrl && (
+          <img src={imagePreviewUrl} alt="업로드할 사진 미리보기" className="detect-preview" />
+        )}
+        {lastDetection && (
+          <div className="detect-result">
+            <p className="hint-text">
+              탐지 결과 {lastDetection.objects.length}개 · 판정: {lastDetection.visual_severity} ·
+              모델: {lastDetection.model_version}
+            </p>
+            {lastDetection.objects.length > 0 && (
+              <ul className="detect-object-list">
+                {lastDetection.objects.map((o, i) => (
+                  <li key={i}>
+                    {o.class_name} ({(o.confidence * 100).toFixed(0)}%)
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        <hr style={{ margin: "16px 0", border: "none", borderTop: "1px solid #e5e7eb" }} />
+
+        <p className="hint-text">
+          외형 상태를 직접 지정해 등급 오버라이드 로직만 테스트할 수도 있습니다 (사진을 올리면
+          이 값은 덮어써집니다).
         </p>
         <div className="inline-form">
           <button disabled={busy} onClick={() => handleSeverity("OK")}>
@@ -174,7 +248,7 @@ export default function PackDetail() {
       </div>
 
       <div className="card">
-        <h2>SOH 예측</h2>
+        <h2>사이클 로그 추가</h2>
         <p className="hint-text">
           등록된 사이클 로그를 기반으로 다음 사이클의 SOH(%)를 예측합니다.
           {latestPrediction && (
@@ -185,13 +259,6 @@ export default function PackDetail() {
             </>
           )}
         </p>
-        <button disabled={busy} onClick={handlePredict}>
-          예측 실행
-        </button>
-      </div>
-
-      <div className="card">
-        <h2>사이클 로그 추가</h2>
         <form className="inline-form" onSubmit={handleAddCycle}>
           <label>
             Cycle Index
@@ -214,6 +281,9 @@ export default function PackDetail() {
           </label>
           <button type="submit" disabled={busy}>
             추가
+          </button>
+          <button type="button" disabled={busy} onClick={handlePredict}>
+            SOH 예측 실행
           </button>
         </form>
 

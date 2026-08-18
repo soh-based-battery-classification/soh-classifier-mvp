@@ -4,3 +4,9 @@ scipy
 pandas
 scikit-learn
 matplotlib
+
+# YOLO 비전 브랜치 학습 전용 (SOH 학습에는 불필요)
+roboflow
+ultralytics
+opencv-python-headless
+pyyaml

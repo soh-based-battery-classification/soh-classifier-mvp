@@ -39,3 +39,21 @@ export interface PackDetail {
   predictions: Prediction[];
   final_state: FinalState | null;
 }
+
+export interface DetectionObject {
+  class_name: string;
+  confidence: number;
+  bbox_x: number;
+  bbox_y: number;
+  bbox_w: number;
+  bbox_h: number;
+}
+
+export interface DetectionResult {
+  id: number;
+  pack_id: string;
+  detected_at: string;
+  model_version: string;
+  visual_severity: VisualSeverity;
+  objects: DetectionObject[];
+}

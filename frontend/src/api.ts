@@ -1,4 +1,12 @@
-import type { CycleLog, FinalState, Pack, PackDetail, Prediction, VisualSeverity } from "./types";
+import type {
+  CycleLog,
+  DetectionResult,
+  FinalState,
+  Pack,
+  PackDetail,
+  Prediction,
+  VisualSeverity,
+} from "./types";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
@@ -64,5 +72,12 @@ export const api = {
 
   modelStatus: () => request<{ is_ready: boolean; mode: string; model_dir: string }>(
     "/api/packs/_model/status"
+  ),
+
+  detectImage: (packId: string, file: File) =>
+    requestFile<DetectionResult>(`/api/packs/${packId}/detect`, file),
+
+  visionModelStatus: () => request<{ is_ready: boolean; model_dir: string }>(
+    "/api/packs/_vision_model/status"
   ),
 };

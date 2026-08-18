@@ -15,5 +15,16 @@ dist/
 # NASA 원본 .mat 데이터 (배터리당 8~16MB, 재다운로드/재업로드로 복구 가능하므로 git에는 미포함)
 backend/training/data/raw/*.mat
 
+# Roboflow EV 배터리 팩 데이터셋(이미지+라벨). 계정으로 언제든 재다운로드 가능하므로 미포함
+backend/training/data/raw_vision/
+
+# YOLO 학습 산출물 — ultralytics가 만드는 배치 미리보기 이미지 등은 raw_vision 이미지를
+# 재포함하게 되므로 미포함. 우리가 직접 쓰는 metrics.json만 추적(NLinear outputs/*/metrics.json과 동일 취지).
+backend/training/outputs/vision/*/*
+!backend/training/outputs/vision/*/metrics.json
+
+# ultralytics가 cwd(backend/)에 체크포인트를 캐시할 수 있음
+backend/yolov8n.pt
+
 # OS
 .DS_Store

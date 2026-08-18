@@ -1,24 +1,45 @@
-"""비전(YOLO) 브랜치 스텁 라우터.
+"""비전(YOLO) 브랜치 라우터.
 
-Phase 2(객체탐지 모델)가 아직 붙기 전까지, 이 엔드포인트로 visual_severity를 직접
-지정해 4-1장의 등급 오버라이드 로직을 end-to-end로 테스트할 수 있다. 실제 YOLO 추론
-서비스가 붙으면 이 엔드포인트 내부 로직만 "이미지 업로드 -> 추론 -> 심각도 계산"으로
-교체하면 되고, 아래쪽의 오버라이드/최종 등급 계산 로직은 그대로 재사용 가능하다.
-"""
+`/detect`가 이미지를 업로드받아 PartDetector(YOLO)로 부품을 탐지하고, 그 결과를
+visual_grading.estimate_severity_from_detections으로 심각도로 변환해 등급 오버라이드
+로직에 반영한다. 이 심각도 변환 규칙은 아직 임시 규칙(visual_grading.py 주석 참고)
+이므로, `/visual-severity`로 직접 지정해 오버라이드 로직만 따로 테스트하는 것도
+계속 지원한다."""
 
 from __future__ import annotations
 
 import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from .. import models_db, schemas
+from ..config import MODEL_DIR
 from ..database import get_db
 from ..grading import GRADE_TO_STATE
-from ..visual_grading import apply_visual_override
+from ..ml.yolo_detector import PartDetector
+from ..visual_grading import apply_visual_override, estimate_severity_from_detections
 
 router = APIRouter(prefix="/api/packs", tags=["detection"])
+
+_detector = PartDetector(MODEL_DIR)
+
+
+def _apply_severity(db: Session, pack: models_db.BatteryPack, visual_severity: str) -> models_db.PackFinalState:
+    final_state = pack.final_state
+    if final_state is None:
+        final_state = models_db.PackFinalState(pack_id=pack.pack_id)
+        db.add(final_state)
+
+    final_state.visual_severity = visual_severity
+
+    if final_state.soh_grade is not None:
+        final_grade = apply_visual_override(final_state.soh_grade, visual_severity)
+        final_state.final_grade = final_grade
+        final_state.final_state = GRADE_TO_STATE[final_grade]
+        final_state.decided_at = datetime.datetime.utcnow()
+
+    return final_state
 
 
 @router.put("/{pack_id}/visual-severity", response_model=schemas.FinalStateOut)
@@ -27,22 +48,66 @@ def set_visual_severity(pack_id: str, payload: schemas.VisualSeverityIn, db: Ses
     if not pack:
         raise HTTPException(status_code=404, detail="팩을 찾을 수 없습니다.")
 
-    final_state = pack.final_state
-    if final_state is None:
-        final_state = models_db.PackFinalState(pack_id=pack_id)
-        db.add(final_state)
-
-    final_state.visual_severity = payload.visual_severity
-
-    if final_state.soh_grade is not None:
-        final_grade = apply_visual_override(final_state.soh_grade, payload.visual_severity)
-        final_state.final_grade = final_grade
-        final_state.final_state = GRADE_TO_STATE[final_grade]
-        final_state.decided_at = datetime.datetime.utcnow()
+    final_state = _apply_severity(db, pack, payload.visual_severity)
 
     db.commit()
     db.refresh(final_state)
     return final_state
+
+
+@router.post("/{pack_id}/detect", response_model=schemas.DetectionResultOut, status_code=201)
+async def detect_pack_image(pack_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    pack = db.get(models_db.BatteryPack, pack_id)
+    if not pack:
+        raise HTTPException(status_code=404, detail="팩을 찾을 수 없습니다.")
+    if not _detector.is_ready:
+        raise HTTPException(status_code=503, detail="객체탐지 모델이 로드되지 않았습니다.")
+
+    image_bytes = await file.read()
+    try:
+        detections = _detector.detect(image_bytes)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"이미지를 처리할 수 없습니다: {e}")
+
+    result = models_db.DetectionResult(pack_id=pack_id, model_version=_detector.model_version)
+    db.add(result)
+    db.flush()
+
+    for d in detections:
+        db.add(
+            models_db.DetectionObject(
+                detection_result_id=result.id,
+                class_name=d.class_name,
+                confidence=d.confidence,
+                bbox_x=d.bbox_x,
+                bbox_y=d.bbox_y,
+                bbox_w=d.bbox_w,
+                bbox_h=d.bbox_h,
+            )
+        )
+
+    severity = estimate_severity_from_detections(detections)
+    _apply_severity(db, pack, severity)
+
+    db.commit()
+    db.refresh(result)
+
+    return schemas.DetectionResultOut(
+        id=result.id,
+        pack_id=result.pack_id,
+        detected_at=result.detected_at,
+        model_version=result.model_version,
+        visual_severity=severity,
+        objects=[schemas.DetectionObjectOut.model_validate(o, from_attributes=True) for o in result.objects],
+    )
+
+
+@router.get("/_vision_model/status")
+def detection_model_status():
+    return {
+        "is_ready": _detector.is_ready,
+        "model_dir": MODEL_DIR,
+    }
 
 
 @router.get("/{pack_id}/final", response_model=schemas.FinalStateOut)
