@@ -107,10 +107,4 @@ python -m training.train_nlinear
 `backend/training/outputs/<model_version>/`에 저장되고, 동시에 서비스가 실제로 읽는
 `backend/app/ml/weights/`에도 자동 배포됩니다.
 
-## 다음 단계 (Phase 2 연결 전)
 
-1. ~~NLinear 학습 → `model.pt` + `model_meta.json` 생성 및 배포~~ 완료 (위 학습 결과 참고)
-2. YOLO 객체탐지 서비스 연결 시 `backend/app/routers/detection.py`의
-   `set_visual_severity` 호출부만 실제 추론 결과로 교체 (오버라이드 로직은 그대로 재사용)
-3. NCP 배포 시 `DATABASE_URL`을 Cloud DB for MySQL 접속 정보로, `CORS_ORIGINS`을
-   실제 프론트 도메인으로 교체
