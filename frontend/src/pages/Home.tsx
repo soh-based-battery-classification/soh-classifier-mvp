@@ -1,5 +1,7 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import GradeBadge from "../components/GradeBadge";
+import "../index.css";
 
 const PAIN_POINTS = [
   {
@@ -82,10 +84,14 @@ export default function Home() {
         </p>
 
         <div className="hero-demo card">
-          <Link to="/register" className="hero-demo-input">
+          <Link 
+            to="/register" 
+            className="hero-demo-input"
+            style={{ textDecoration: 'none', color: 'inherit' }}
+          >
             <span className="hero-demo-icon">🔋</span>
 
-            <span className="hero-demo-placeholder">
+            <span className="hero-demo-placeholder" style={{ textDecoration: 'none' }}>
               PACK-001 · NCM 72Ah 팩 ID 입력...
             </span>
           </Link>
