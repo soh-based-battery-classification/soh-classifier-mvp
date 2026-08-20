@@ -35,11 +35,31 @@ const USAGE = [
 ];
 
 const FEATURES = [
-  { n: "01", title: "SOH 예측", body: "NLinear 모델이 사이클 이력을 보고 다음 사이클의 SOH(%)를 예측해요." },
-  { n: "02", title: "등급 오버라이드 근거", body: "외형 심각도(OK/MODERATE/CRITICAL)에 따라 등급이 왜 바뀌었는지 매트릭스로 보여줘요." },
-  { n: "03", title: "부품 자동 탐지", body: "YOLO가 사진 속 프레임·모듈·버스바·나사류 같은 부품을 자동으로 찾아줘요." },
-  { n: "04", title: "팩별 이력 관리", body: "팩마다 사이클 로그·예측·최종 등급 이력을 한 화면에서 확인해요." },
-  { n: "05", title: "전체 대시보드", body: "등록된 모든 팩과 등급을 대시보드에서 한눈에 검색·조회해요." },
+  {
+    n: "01",
+    title: "SOH 예측",
+    body: "NLinear 모델이 사이클 이력을 보고 다음 사이클의 SOH(%)를 예측해요.",
+  },
+  {
+    n: "02",
+    title: "등급 오버라이드 근거",
+    body: "외형 심각도(OK/MODERATE/CRITICAL)에 따라 등급이 왜 바뀌었는지 매트릭스로 보여줘요.",
+  },
+  {
+    n: "03",
+    title: "부품 자동 탐지",
+    body: "YOLO가 사진 속 프레임·모듈·버스바·나사류 같은 부품을 자동으로 찾아줘요.",
+  },
+  {
+    n: "04",
+    title: "팩별 이력 관리",
+    body: "팩마다 사이클 로그·예측·최종 등급 이력을 한 화면에서 확인해요.",
+  },
+  {
+    n: "05",
+    title: "전체 대시보드",
+    body: "등록된 모든 팩과 등급을 대시보드에서 한눈에 검색·조회해요.",
+  },
 ];
 
 const STEPS = [
@@ -54,16 +74,22 @@ export default function Home() {
     <div className="home">
       <section className="hero">
         <p className="hero-eyebrow">SOH Classifier</p>
+
         <h1>폐배터리 등급, 감이 아니라 데이터로 매깁니다</h1>
+
         <p className="hero-sub">
           사이클 로그와 외형 사진만 넣으면, AI가 SOH를 예측하고 A/B/C/D 등급까지 자동으로 산출합니다.
         </p>
 
         <div className="hero-demo card">
-          <div className="hero-demo-input">
+          <Link to="/register" className="hero-demo-input">
             <span className="hero-demo-icon">🔋</span>
-            <span className="hero-demo-placeholder">PACK-001 · NCM 72Ah 팩 ID 입력...</span>
-          </div>
+
+            <span className="hero-demo-placeholder">
+              PACK-001 · NCM 72Ah 팩 ID 입력...
+            </span>
+          </Link>
+
           <div className="hero-demo-tags">
             <span className="tag">사이클 로그 기반 SOH 예측</span>
             <span className="tag">외형 사진 기반 등급 오버라이드</span>
@@ -75,6 +101,7 @@ export default function Home() {
           <Link to="/register" className="btn-primary">
             팩 등록하러 가기
           </Link>
+
           <Link to="/dashboard" className="btn-ghost">
             대시보드 보기
           </Link>
@@ -83,12 +110,16 @@ export default function Home() {
 
       <section className="section">
         <p className="section-eyebrow">흔한 상황</p>
+
         <h2>이런 적, 있지 않나요?</h2>
+
         <div className="grid-3">
           {PAIN_POINTS.map((p) => (
             <div className="card pain-card" key={p.n}>
               <span className="pain-n">{p.n}</span>
+
               <h3>{p.title}</h3>
+
               <p>{p.body}</p>
             </div>
           ))}
@@ -97,12 +128,18 @@ export default function Home() {
 
       <section className="section">
         <p className="section-eyebrow">이용 방법</p>
+
         <h2>데이터는 어떻게 넣어도 상관없어요</h2>
-        <p className="section-sub">직접 입력이든, CSV든, 사진이든 — 등급 산출은 서비스가 알아서 합니다.</p>
+
+        <p className="section-sub">
+          직접 입력이든, CSV든, 사진이든 — 등급 산출은 서비스가 알아서 합니다.
+        </p>
+
         <div className="grid-3">
           {USAGE.map((u) => (
             <div className="card" key={u.title}>
               <h3>{u.title}</h3>
+
               <p>{u.body}</p>
             </div>
           ))}
@@ -112,8 +149,12 @@ export default function Home() {
           {STEPS.map((s, i) => (
             <div className="step" key={s}>
               <span className="step-n">{i + 1}</span>
+
               <span>{s}</span>
-              {i < STEPS.length - 1 && <span className="step-arrow">→</span>}
+
+              {i < STEPS.length - 1 && (
+                <span className="step-arrow">→</span>
+              )}
             </div>
           ))}
         </div>
@@ -121,13 +162,20 @@ export default function Home() {
 
       <section className="section">
         <p className="section-eyebrow">제공 기능</p>
+
         <h2>팩 하나면, 등급 산출까지 자동</h2>
-        <p className="section-sub">등록만 하면 예측부터 등급 확정까지 전부 이어집니다.</p>
+
+        <p className="section-sub">
+          등록만 하면 예측부터 등급 확정까지 전부 이어집니다.
+        </p>
+
         <div className="grid-3">
           {FEATURES.map((f) => (
             <div className="card feature-card" key={f.n}>
               <span className="pain-n">{f.n}</span>
+
               <h3>{f.title}</h3>
+
               <p>{f.body}</p>
             </div>
           ))}
@@ -136,16 +184,22 @@ export default function Home() {
 
       <section className="section preview-section">
         <p className="section-eyebrow">실제 동작 미리보기</p>
+
         <h2>등급은 이렇게 표시됩니다</h2>
+
         <div className="card preview-card">
           <div className="preview-row">
             <span>SOH 예측 등급</span>
+
             <GradeBadge grade="B" />
           </div>
+
           <div className="preview-row">
             <span>외형 CRITICAL 오버라이드 후 최종 등급</span>
+
             <GradeBadge grade="D" />
           </div>
+
           <p className="hint-text">
             SOH 등급이 B여도, 외형 탐지 결과가 CRITICAL이면 최종 등급은 D(재활용 대상)로 낮아집니다.
           </p>
@@ -154,7 +208,11 @@ export default function Home() {
 
       <section className="cta card">
         <h2>지금 바로 시작하세요</h2>
-        <p>팩 하나를 등록하면 시작됩니다. 이후 사이클 로그를 추가하거나 사진을 올려 자동으로 등급을 산출하세요.</p>
+
+        <p>
+          팩 하나를 등록하면 시작됩니다. 이후 사이클 로그를 추가하거나 사진을 올려 자동으로 등급을 산출하세요.
+        </p>
+
         <Link to="/register" className="btn-primary">
           팩 등록하러 가기
         </Link>
@@ -162,9 +220,10 @@ export default function Home() {
 
       <footer className="home-footer">
         <p className="hint-text">SOH Classifier</p>
+
         <p className="hint-text">
-          SOH 예측은 NLinear 모델 기반 추정치이며 실측값과 다를 수 있습니다. 외형 등급은 부품 탐지 결과에 대한
-          임시 규칙 기반이며, 실제 손상 판정을 대체하지 않습니다.
+          SOH 예측은 NLinear 모델 기반 추정치이며 실측값과 다를 수 있습니다.
+          외형 등급은 부품 탐지 결과에 대한 임시 규칙 기반이며, 실제 손상 판정을 대체하지 않습니다.
         </p>
       </footer>
     </div>
