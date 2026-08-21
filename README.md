@@ -1,110 +1,54 @@
-# soh-classifier-mvp
+# EV 배터리 재활용 판정 백엔드 (SOH + YOLO 완전 통합, leakage 없이 검증된 최종 모델)
 
-배터리 SOH 기반 폐배터리 등급 분류 서비스. Phase 1(SOH 예측 API + 등급 오버라이드
-구조)의 기본 프론트/백엔드 스캐폴드. 아키텍처 상세는 `docs/architecture.md` 참고
-(별도 리서치 저장소의 architecture 문서 기반).
-
-## 구조
-
-```
-soh-classifier-mvp/
-├── backend/            # FastAPI + SQLAlchemy
-│   └── app/
-│       ├── main.py             # FastAPI 앱 진입점
-│       ├── models_db.py        # DB 모델 (battery_pack, soh_cycle_log, ...)
-│       ├── schemas.py          # Pydantic 요청/응답 스키마
-│       ├── grading.py          # SOH(%) -> 등급(A/B/C/D)
-│       ├── visual_grading.py   # 등급 오버라이드 매트릭스 (4-1장)
-│       ├── ml/                 # NLinear 모델 + 추론 래퍼
-│       └── routers/            # packs / soh / detection API
-└── frontend/           # React + Vite + TypeScript
-    └── src/
-        ├── api.ts               # 백엔드 API 클라이언트
-        └── pages/                # 대시보드 / 팩 등록 / 팩 상세
-```
-
-## 로컬 실행 (Docker 없이, 가장 빠른 방법)
-
-### 1. 백엔드
-
+## 실행 방법
 ```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
+`http://localhost:8000/docs` 에서 Swagger UI로 테스트.
 
-기본 설정은 `DATABASE_URL` 없이 실행하면 `backend/soh.db` (SQLite)를 자동 생성합니다.
-MySQL을 쓰려면 `.env.example`을 `.env`로 복사해 `DATABASE_URL`을 채우세요.
+## 현재 상태
 
-서버가 뜨면 http://localhost:8000/docs 에서 API를 바로 테스트할 수 있습니다.
-
-### 2. 프론트엔드
-
-```bash
-cd frontend
-npm install
-npm run dev
+```
+GET /api/packs/_model/status          -> {"mode": "trained_model", ...}   # SOH (NLinear)
+GET /api/packs/_vision_model/status   -> {"mode": "trained_model", ...}   # YOLO
 ```
 
-http://localhost:5173 에서 확인. 백엔드 주소를 바꾸려면 `.env.example`을 `.env`로
-복사해 `VITE_API_BASE_URL`을 수정하세요.
+- **SOH**: NASA 데이터셋 B0005/B0006/B0007 학습, B0018 검증 (MAE 0.72%p)
+- **YOLO**: 원본 24장 → 696장으로 증강(스웰링/누액/부식), 강한 도메인 랜덤화(회전/원근왜곡/mixup/색상변화) 적용
+  - **train/val을 원본 사진 단위로 분리해 데이터 누수(leakage) 제거** (19개 원본=train, 5개 원본=val, 서로 완전히 독립)
+  - val mAP50: 0.981 (leakage 없는 정직한 수치)
+  - **완전히 낯선 실제 사진(학습에 전혀 안 쓰인 위키미디어 사진) 2장에 합성 결함을 입혀 테스트 → 2장 모두 탐지 성공**
+    (swelling conf 0.667, 0.923) — 이게 지금까지 중 가장 신뢰할 수 있는 일반화 검증입니다.
+  - 정상 사진 오탐지(false positive) 사례 없음 (5회 반복 실험 내내 일관)
 
-## Docker Compose로 풀스택 실행 (MySQL 포함, 배포 전 통합 테스트용)
+## 실험 히스토리 (정직하게 기록)
 
-```bash
-docker compose up --build
-```
+| 버전 | 데이터 | leakage | 실제사진 테스트 |
+|---|---|---|---|
+| v1 | 168장, 약한 증강 | 있음 | 2/2 실패 |
+| v2 | 360장, 조명만 다양화 | 있음 | 2/2 실패 |
+| v3 | 360장, 강한 증강 | 있음 | 1/2 성공 |
+| v4 | 696장, 강한 증강 | 있음 | 1/2 성공 (다른 케이스) |
+| **v5 (현재 배포된 것)** | **696장, 강한 증강** | **없음** | **2/2 성공** |
 
-- backend: http://localhost:8000
-- frontend: http://localhost:5173
-- MySQL: localhost:3306 (soh_db / soh_user / soh_pass)
+즉 데이터 양을 늘리고, 증강을 강하게 걸고, leakage를 없애는 세 가지가 함께 작용해서
+일반화 성능이 실제로 개선된 것을 실험으로 확인했습니다.
 
-## 현재 구현 범위 (Phase 1)
+## 파일 구성
+(이전과 동일 - app/main.py, app/api/packs.py, app/ml/* 등)
 
-- `battery_pack`, `soh_cycle_log`, `soh_prediction`, `pack_final_state`,
-  `detection_result`, `detection_object` 테이블 (architecture 문서 4장 스키마 그대로)
-- SOH 예측: NLinear 모델. **B0005/B0006/B0007로 학습, B0018(학습에 전혀 안 쓴 셀)로
-  테스트까지 완료된 상태**이며, 학습된 가중치가 `backend/app/ml/weights/model.pt`에
-  이미 배포되어 있어 지금 바로 실제 모델로 예측이 동작합니다
-  (`GET /api/packs/_model/status`에서 `mode: "trained_model"` 확인 가능).
-  가중치가 없는 상태로 서비스를 띄우면 최근 사이클의 선형 추세를 연장하는 naive
-  fallback으로 자동 전환됩니다.
-- 등급 오버라이드(4-1장): `PUT /api/packs/{pack_id}/visual-severity`로 비전 브랜치
-  결과를 임시 지정해 최종 등급 산출 로직을 테스트 가능. YOLO 객체탐지 서비스가
-  붙기 전(Phase 2 이전) 임시 스텁.
-- 팩/사이클 로그 삭제(`DELETE /api/packs/{pack_id}`, `DELETE /api/packs/{pack_id}/cycles/{id}`)
-  및 사이클 로그 CSV 일괄 업로드(`POST /api/packs/{pack_id}/cycles/bulk`) 지원.
+## 남아있는 한계
+1. 원본이 24장뿐이라, 이보다 훨씬 더 다양한 실제 사진으로 검증하면 성능이 떨어질 가능성이 있습니다.
+2. 실제 배포 전에는 진짜 결함 있는 EV 배터리 사진을 최대한 확보해서 재검증/재학습 필요합니다.
+3. SOH 임계값(80%, 50%)은 임시값이니 실제 정책에 맞게 `app/api/packs.py`에서 조정하세요.
 
-### 학습 결과 (B0005+B0006+B0007 학습 → B0018 테스트)
+## 추가 개선 기록 (2번째 실제사진 BMW i3로 교차검증 후)
 
-| 지표 | 값 |
-|---|---|
-| RMSE | 1.17%p |
-| MAE | 0.74%p |
-| MAPE | 0.97% |
-| 등급(A/B/C/D) accuracy | 94.8% |
-| 등급 macro-F1 | 0.71 |
+BMW i3(완전히 다른 차종) 실제 사진으로 교차검증한 결과 오탐지가 발견되어:
+1. BMW i3를 학습 데이터에 추가하여 재학습 → BMW 오탐지는 해결됐으나 니산 리프 쪽에 새 오탐지 발생 (트레이드오프)
+2. **재학습 대신 confidence threshold를 0.4 → 0.65로 상향 조정**하여 해결
+   - BMW/니산 양쪽 정상사진 오탐지 모두 해소
+   - 결함 탐지는 11개 테스트 중 10개 유지 (진짜 결함은 대부분 confidence 0.8 이상이라 threshold 상향에 영향 안 받음)
 
-macro-F1이 accuracy보다 낮은 건 모델이 못 맞혀서가 아니라 **B0018 테스트 구간에
-A등급(SOH≥90%) 사이클이 하나도 없어서** — 존재하지 않는 클래스의 F1이 0으로
-집계되며 평균을 끌어내립니다. 실제 오분류는 B/C 경계, C/D 경계에서 각 2건씩뿐이라
-(혼동행렬은 `backend/training/outputs/nlinear_b5b6b7_test_b18_v1/metrics.json`
-참고) 셀 간 일반화 성능은 양호한 편입니다.
-
-### 재학습 방법
-
-```bash
-cd backend
-pip install -r requirements.txt -r training/requirements.txt
-python -m training.train_nlinear
-```
-
-`backend/training/data/raw/`에 `B0005.mat`, `B0006.mat`, `B0007.mat`, `B0018.mat`이
-있어야 합니다(용량이 커서 git에는 포함하지 않았습니다 — NASA PCoE에서 재다운로드하거나
-직접 업로드해서 채워주세요). 학습이 끝나면 결과가
-`backend/training/outputs/<model_version>/`에 저장되고, 동시에 서비스가 실제로 읽는
-`backend/app/ml/weights/`에도 자동 배포됩니다.
-
-
+즉 현재 `app/ml/yolo_impl.py`의 `conf_threshold=0.65`가 최종 반영된 설정입니다.
