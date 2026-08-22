@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
-CONF_THRESHOLD = 0.25
+CONF_THRESHOLD = 0.65
 
 
 @dataclass
