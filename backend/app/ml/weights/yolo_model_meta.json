@@ -1,21 +1,8 @@
 {
-  "model_version": "yolov8n_ev_battery_pack_v1",
-  "base_checkpoint": "yolov8n.pt",
-  "img_size": 640,
-  "class_names": {
-    "0": "Aluminum-frame",
-    "1": "Battery Module",
-    "2": "Bolt",
-    "3": "Bus-bar",
-    "4": "Cable",
-    "5": "Nut",
-    "6": "Screw"
-  },
-  "epochs": 100,
-  "val_metrics": {
-    "map50": 0.523,
-    "map50_95": 0.295,
-    "precision": 0.545,
-    "recall": 0.566
-  }
+  "model_version": "yolov8n_ev_battery_defect_v5_noleak",
+  "classes": ["swelling", "leak", "corrosion"],
+  "conf_threshold_recommended": 0.65,
+  "trained_on": "725 synthetic images (25 real EV battery pack photos x augmentation, defect synthesis + heavy domain randomization)",
+  "val_map50": 0.981,
+  "notes": "train/val split by original photo group (no leakage). Cross-validated on 3 independent real photos never seen in training."
 }

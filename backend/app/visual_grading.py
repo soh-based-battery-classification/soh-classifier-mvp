@@ -15,9 +15,14 @@ OVERRIDE_MATRIX: Dict[str, Dict[str, str]] = {
     "OK": {"A": "A", "B": "B", "C": "C", "D": "D"},
 }
 
-# 핵심 구조 부품(프레임/모듈/버스바) — 탐지 안 되면 분해·누락 가능성으로 취급.
-STRUCTURAL_PARTS = {"Aluminum-frame", "Battery Module", "Bus-bar"}
-LOW_CONFIDENCE_THRESHOLD = 0.5
+# 결함 유형별 심각도 분류.
+# swelling(스웰링)/leak(누액) = 화재/누출 직결 위험 -> CRITICAL
+# corrosion(부식) = 상대적으로 경미 -> MODERATE
+CRITICAL_DEFECTS = {"swelling", "leak"}
+MODERATE_DEFECTS = {"corrosion"}
+
+# 이 값 미만 confidence는 오탐지 가능성 높다고 보고 무시
+MIN_CONFIDENCE = 0.65
 
 
 class _HasClassAndConfidence(Protocol):
@@ -26,24 +31,29 @@ class _HasClassAndConfidence(Protocol):
 
 
 def estimate_severity_from_detections(detections: Iterable[_HasClassAndConfidence]) -> str:
-    """탐지된 부품 목록으로부터 visual_severity를 추정하는 임시 규칙(PLACEHOLDER).
+    """실제 손상탐지(swelling/leak/corrosion) 결과로부터 visual_severity 산출.
 
-    이 YOLO 모델은 손상(파손/부식/팽창 등)이 아닌 부품 종류를 탐지하도록 학습됐고,
-    실제 손상 판정 기준은 아직 정의되어 있지 않다. 그때까지 핵심 구조 부품 중
-    하나라도 탐지되지 않으면 CRITICAL, 다 탐지됐지만 평균 신뢰도가 낮으면(오염/부식
-    등으로 인식률이 떨어졌을 가능성) MODERATE로 임시 매핑한다. 실제 손상 라벨 기준이
-    생기면 이 함수만 교체하면 되고, 호출부(detection 라우터)는 그대로 재사용 가능하다.
+    기존 부품탐지 기반 placeholder를 실제 손상탐지 모델로 교체한 버전.
+    (yolo_best.pt 를 swelling/leak/corrosion 을 학습한 가중치로 교체했다는 전제)
+
+    우선순위:
+      1) swelling 또는 leak 이 하나라도 confidence>=MIN_CONFIDENCE 로 탐지됨
+         -> CRITICAL (화재/누출 위험, SOH 무관하게 최종등급 D로 깎임)
+      2) corrosion 만 confidence>=MIN_CONFIDENCE 로 탐지됨
+         -> MODERATE
+      3) 결함 없음 또는 전부 confidence 미달
+         -> OK
     """
     detections = list(detections)
-    if not detections:
+
+    confident_defects = {
+        d.class_name for d in detections if d.confidence >= MIN_CONFIDENCE
+    }
+
+    if confident_defects & CRITICAL_DEFECTS:
         return "CRITICAL"
 
-    detected_classes = {d.class_name for d in detections}
-    if STRUCTURAL_PARTS - detected_classes:
-        return "CRITICAL"
-
-    avg_confidence = sum(d.confidence for d in detections) / len(detections)
-    if avg_confidence < LOW_CONFIDENCE_THRESHOLD:
+    if confident_defects & MODERATE_DEFECTS:
         return "MODERATE"
 
     return "OK"
