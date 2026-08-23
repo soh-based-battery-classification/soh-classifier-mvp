@@ -197,64 +197,6 @@ export default function PackDetail() {
 
       {error && <p className="alert-error">⚠️ {error}</p>}
 
-      {/* 최종 등급 & 사진 업로드 카드 */}
-      <div className="card">
-        <h2>최종 등급 및 외형 검사</h2>
-        <div className="pack-grade-row">
-          SOH 등급: <GradeBadge grade={detail.final_state?.soh_grade} /> &nbsp;→&nbsp; 최종 등급:{" "}
-          <GradeBadge grade={detail.final_state?.final_grade} />
-        </div>
-        <p className="hint-text">
-          외형 상태(visual_severity): <strong>{detail.final_state?.visual_severity ?? "PENDING"}</strong>
-          {detail.final_state?.final_state ? ` · ${detail.final_state.final_state}` : ""}
-        </p>
-        <p className="hint-text">
-          팩 사진을 올리면 YOLO가 부품을 탐지해 외형 상태를 자동으로 판정합니다.
-        </p>
-
-        <div className="inline-form" style={{ marginTop: "var(--space-4)" }}>
-          <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} />
-          <button className="btn-primary" disabled={detecting || !imageFile} onClick={handleImageUpload}>
-            {detecting ? "탐지 중..." : "사진 업로드 & 탐지"}
-          </button>
-        </div>
-
-        {imagePreviewUrl && (
-          <img src={imagePreviewUrl} alt="업로드할 사진 미리보기" className="detect-preview" />
-        )}
-
-        {lastDetection && (
-          <div className="detect-result">
-            <p className="hint-text">
-              탐지 결과 {lastDetection.objects.length}개 · 판정: {lastDetection.visual_severity} · 모델: {lastDetection.model_version}
-            </p>
-            {!detail.final_state?.final_grade && detail.cycle_logs.length === 0 && (
-              <p className="alert-error">
-                ⚠️ 사이클 로그가 없어 SOH 등급을 계산할 수 없습니다. 아래에서 사이클 로그를 먼저 추가해 주세요.
-              </p>
-            )}
-            {lastDetection.objects.length > 0 && (
-              <ul className="detect-object-list">
-                {lastDetection.objects.map((o, i) => (
-                  <li key={i}>
-                    {o.class_name} ({(o.confidence * 100).toFixed(0)}%)
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-
-        <hr className="divider" />
-
-        <p className="hint-text">외형 상태 직접 지정 (수동 오버라이드 테스트)</p>
-        <div className="inline-form">
-          <button disabled={busy} onClick={() => handleSeverity("OK")}>OK</button>
-          <button disabled={busy} onClick={() => handleSeverity("MODERATE")}>MODERATE</button>
-          <button disabled={busy} onClick={() => handleSeverity("CRITICAL")}>CRITICAL</button>
-        </div>
-      </div>
-
       {/* 사이클 로그 추가 카드 */}
       <div className="card">
         <h2>사이클 로그 추가 및 SOH 예측</h2>
@@ -345,6 +287,59 @@ export default function PackDetail() {
             )}
           </tbody>
         </table>
+        </div>
+      </div>
+
+      {/* 최종 등급 & 사진 업로드 카드 */}
+      <div className="card">
+        <h2>최종 등급 및 외형 검사</h2>
+        <div className="pack-grade-row">
+          SOH 등급: <GradeBadge grade={detail.final_state?.soh_grade} /> &nbsp;→&nbsp; 최종 등급:{" "}
+          <GradeBadge grade={detail.final_state?.final_grade} />
+        </div>
+        <p className="hint-text">
+          외형 상태(visual_severity): <strong>{detail.final_state?.visual_severity ?? "PENDING"}</strong>
+          {detail.final_state?.final_state ? ` · ${detail.final_state.final_state}` : ""}
+        </p>
+        <p className="hint-text">
+          팩 사진을 올리면 YOLO가 부품을 탐지해 외형 상태를 자동으로 판정합니다.
+        </p>
+
+        <div className="inline-form" style={{ marginTop: "var(--space-4)" }}>
+          <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} />
+          <button className="btn-primary" disabled={detecting || !imageFile} onClick={handleImageUpload}>
+            {detecting ? "탐지 중..." : "사진 업로드 & 탐지"}
+          </button>
+        </div>
+
+        {imagePreviewUrl && (
+          <img src={imagePreviewUrl} alt="업로드할 사진 미리보기" className="detect-preview" />
+        )}
+
+        {lastDetection && (
+          <div className="detect-result">
+            <p className="hint-text">
+              탐지 결과 {lastDetection.objects.length}개 · 판정: {lastDetection.visual_severity} · 모델: {lastDetection.model_version}
+            </p>
+            {lastDetection.objects.length > 0 && (
+              <ul className="detect-object-list">
+                {lastDetection.objects.map((o, i) => (
+                  <li key={i}>
+                    {o.class_name} ({(o.confidence * 100).toFixed(0)}%)
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        <hr className="divider" />
+
+        <p className="hint-text">외형 상태 직접 지정 (수동 오버라이드 테스트)</p>
+        <div className="inline-form">
+          <button disabled={busy} onClick={() => handleSeverity("OK")}>OK</button>
+          <button disabled={busy} onClick={() => handleSeverity("MODERATE")}>MODERATE</button>
+          <button disabled={busy} onClick={() => handleSeverity("CRITICAL")}>CRITICAL</button>
         </div>
       </div>
     </div>
