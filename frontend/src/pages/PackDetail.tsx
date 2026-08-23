@@ -228,6 +228,11 @@ export default function PackDetail() {
             <p className="hint-text">
               탐지 결과 {lastDetection.objects.length}개 · 판정: {lastDetection.visual_severity} · 모델: {lastDetection.model_version}
             </p>
+            {!detail.final_state?.final_grade && detail.cycle_logs.length === 0 && (
+              <p className="alert-error">
+                ⚠️ 사이클 로그가 없어 SOH 등급을 계산할 수 없습니다. 아래에서 사이클 로그를 먼저 추가해 주세요.
+              </p>
+            )}
             {lastDetection.objects.length > 0 && (
               <ul className="detect-object-list">
                 {lastDetection.objects.map((o, i) => (
