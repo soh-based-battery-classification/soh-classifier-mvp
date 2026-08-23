@@ -1,13 +1,14 @@
 services:
   mysql:
     image: mysql:8.0
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: soh_db
       MYSQL_USER: soh_user
-      MYSQL_PASSWORD: soh_pass
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -18,9 +19,10 @@ services:
 
   backend:
     build: ./backend
+    restart: unless-stopped
     environment:
-      DATABASE_URL: mysql+pymysql://soh_user:soh_pass@mysql:3306/soh_db
-      CORS_ORIGINS: http://localhost:5173
+      DATABASE_URL: mysql+pymysql://soh_user:${MYSQL_PASSWORD}@mysql:3306/soh_db
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
     ports:
       - "8000:8000"
     depends_on:
@@ -31,8 +33,9 @@ services:
 
   frontend:
     build: ./frontend
+    restart: unless-stopped
     environment:
-      VITE_API_BASE_URL: http://localhost:8000
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
     ports:
       - "5173:5173"
     depends_on:
