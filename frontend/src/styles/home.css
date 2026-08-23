@@ -41,24 +41,11 @@
   position: absolute;
   inset: 0;
   z-index: -2;
-  background-image: linear-gradient(rgba(91, 155, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(91, 155, 255, 0.07) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(63, 125, 251, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 125, 251, 0.09) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 90% 70% at 70% 15%, #000 20%, transparent 78%);
   -webkit-mask-image: radial-gradient(ellipse 90% 70% at 70% 15%, #000 20%, transparent 78%);
-}
-
-/* 우상단 광원 */
-.hero::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: -240px;
-  right: -140px;
-  width: 720px;
-  height: 620px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.3) 0%, transparent 62%);
-  pointer-events: none;
 }
 
 .hero__inner {
@@ -128,12 +115,21 @@
 /* --- Hero 계측 패널 ------------------------------------------------------- */
 
 .panel {
+  position: relative;
   border: 1px solid var(--border-on-ink);
   border-radius: var(--radius-lg);
-  background: linear-gradient(160deg, rgba(29, 43, 69, 0.72), rgba(11, 20, 36, 0.72));
+  background: var(--ink-800);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
-  backdrop-filter: blur(2px);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary) 0%, #8fb4ff 50%, var(--accent-muted) 100%);
+  z-index: 1;
 }
 
 .panel__bar {
@@ -142,7 +138,7 @@
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-on-ink);
-  background: rgba(7, 13, 24, 0.5);
+  background: var(--ink-900);
 }
 
 .panel__bar .mono-label {
@@ -163,7 +159,7 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-4) var(--space-5);
   border-top: 1px solid var(--border-on-ink);
-  background: rgba(7, 13, 24, 0.36);
+  background: rgba(11, 10, 8, 0.3);
 }
 
 .readout {
@@ -192,7 +188,7 @@
   color: #fff;
 }
 
-.readout__value--grade-b { color: #7aa9ff; }
+.readout__value--grade-b { color: #5fcbd1; }
 
 /* SOH 곡선 SVG */
 .soh-chart {
@@ -204,7 +200,7 @@
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.08em;
-  fill: #64748b;
+  fill: #8a8171;
 }
 
 .soh-chart__band-label {
@@ -276,7 +272,7 @@
 
 .status-rail {
   border-top: 1px solid var(--border-on-ink);
-  background: rgba(7, 13, 24, 0.6);
+  background: var(--ink-900);
 }
 
 .status-rail__inner {
@@ -369,7 +365,7 @@
 
 .problem__headline em {
   font-style: normal;
-  color: var(--warning);
+  color: var(--primary);
 }
 
 .problem__lead {
@@ -429,14 +425,26 @@
 }
 
 .branch {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--bg-card);
   padding: var(--space-6);
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
   transition: box-shadow var(--dur-base) var(--ease-out),
     transform var(--dur-base) var(--ease-out), border-color var(--dur-base) ease;
 }
+
+.branch::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+}
+
+.branch--data::before { background: var(--primary); }
+.branch--vision::before { background: var(--grade-b); }
 
 .branch:hover,
 .branch:focus-within {
@@ -469,8 +477,8 @@
 }
 
 .branch--vision .branch__tag {
-  background: var(--grade-c-soft);
-  color: #92400e;
+  background: var(--grade-b-soft);
+  color: var(--grade-b);
 }
 
 .branch__head h3 {
@@ -533,7 +541,7 @@
 
 .branch--vision:hover .branch__step::after,
 .branch--vision:focus-within .branch__step::after {
-  border-color: var(--warning);
+  border-color: var(--grade-b);
 }
 
 .branch__step-title {
@@ -578,6 +586,9 @@
 
 /* 최종 등급 노드 */
 .flow__outcome {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   border: 1px solid var(--ink-600);
   border-radius: var(--radius-lg);
   background: var(--ink-800);
@@ -588,6 +599,19 @@
   align-items: center;
   gap: var(--space-5);
   box-shadow: var(--shadow-lg);
+}
+
+.flow__outcome::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: linear-gradient(rgba(63, 125, 251, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 125, 251, 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 70% 100% at 100% 0%, #000 15%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 100% at 100% 0%, #000 15%, transparent 75%);
+  pointer-events: none;
 }
 
 .flow__outcome-main {
@@ -640,15 +664,28 @@
 }
 
 .capability-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: var(--space-6);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--bg-card);
+  overflow: hidden;
   transition: box-shadow var(--dur-base) var(--ease-out),
     transform var(--dur-base) var(--ease-out);
 }
+
+.capability-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+}
+
+.capability-card:nth-child(1)::before { background: var(--primary); }
+.capability-card:nth-child(2)::before { background: var(--grade-b); }
+.capability-card:nth-child(3)::before { background: var(--accent-muted); }
 
 .capability-card:hover {
   box-shadow: var(--shadow-lg);
@@ -663,6 +700,9 @@
   text-transform: uppercase;
   color: var(--primary);
 }
+
+.capability-card:nth-child(2) .capability-card__kicker { color: var(--grade-b); }
+.capability-card:nth-child(3) .capability-card__kicker { color: var(--accent-muted); }
 
 .capability-card h3 {
   font-size: var(--fs-lg);
@@ -721,6 +761,9 @@
   background: var(--bg-card);
 }
 
+.intake-card:nth-child(2) { border-left-color: var(--grade-b); }
+.intake-card:nth-child(3) { border-left-color: var(--accent-muted); }
+
 .intake-card h3 {
   font-size: var(--fs-base);
   font-weight: var(--fw-bold);
@@ -738,7 +781,7 @@
   border: 1px solid var(--primary-border);
   background: var(--primary-soft);
   border-radius: var(--radius-sm);
-  color: #1e3a8a;
+  color: var(--ink-700);
   font-size: var(--fs-sm);
 }
 
@@ -1082,8 +1125,8 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image: linear-gradient(rgba(91, 155, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(91, 155, 255, 0.06) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(63, 125, 251, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 125, 251, 0.08) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse 70% 90% at 50% 100%, #000 10%, transparent 72%);
   -webkit-mask-image: radial-gradient(ellipse 70% 90% at 50% 100%, #000 10%, transparent 72%);

@@ -53,10 +53,10 @@ const CURVE_PATH = POINTS.map(
 const LAST = POINTS[POINTS.length - 1];
 
 const BANDS = [
-  { grade: "A", top: PAD_T, bottom: yOf(90), color: "#22c55e" },
-  { grade: "B", top: yOf(90), bottom: yOf(80), color: "#5b9bff" },
-  { grade: "C", top: yOf(80), bottom: yOf(70), color: "#f59e0b" },
-  { grade: "D", top: yOf(70), bottom: PAD_T + plotH, color: "#ef4444" },
+  { grade: "A", top: PAD_T, bottom: yOf(90), color: "#4c9a5b" },
+  { grade: "B", top: yOf(90), bottom: yOf(80), color: "#2fa3ac" },
+  { grade: "C", top: yOf(80), bottom: yOf(70), color: "#d97b1f" },
+  { grade: "D", top: yOf(70), bottom: PAD_T + plotH, color: "#c33a2c" },
 ];
 
 export default function SohCurve() {
@@ -69,13 +69,13 @@ export default function SohCurve() {
     >
       <defs>
         <linearGradient id="soh-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#5b9bff" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#5b9bff" stopOpacity="0" />
+          <stop offset="0%" stopColor="#3f7dfb" stopOpacity="0.24" />
+          <stop offset="100%" stopColor="#3f7dfb" stopOpacity="0" />
         </linearGradient>
         <linearGradient id="soh-stroke" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#7dd3fc" />
-          <stop offset="70%" stopColor="#5b9bff" />
-          <stop offset="100%" stopColor="#a5b4fc" />
+          <stop offset="0%" stopColor="#7fabff" />
+          <stop offset="70%" stopColor="#3f7dfb" />
+          <stop offset="100%" stopColor="#2f66db" />
         </linearGradient>
       </defs>
 
@@ -184,16 +184,16 @@ export default function SohCurve() {
           cx={LAST.x}
           cy={LAST.y}
           r="5"
-          fill="#5b9bff"
+          fill="#3f7dfb"
           opacity="0.5"
         />
-        <circle cx={LAST.x} cy={LAST.y} r="4.5" fill="#0b1424" />
+        <circle cx={LAST.x} cy={LAST.y} r="4.5" fill="#0d1220" />
         <circle
           cx={LAST.x}
           cy={LAST.y}
           r="4.5"
           fill="none"
-          stroke="#93c5fd"
+          stroke="#7fabff"
           strokeWidth="2"
         />
       </g>

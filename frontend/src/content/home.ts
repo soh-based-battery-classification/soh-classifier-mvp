@@ -79,6 +79,22 @@ export const GRADE_TO_STATE: Record<Grade, string> = {
   D: "재활용 대상",
 };
 
+/** 최종 등급을 대시보드 집계용 3개 그룹으로 묶는다 (A·B: 재사용 / C: 재제조 / D: 재활용). */
+export type GradeGroup = "reuse" | "remanufacture" | "recycle";
+
+export const GRADE_GROUP: Record<Grade, GradeGroup> = {
+  A: "reuse",
+  B: "reuse",
+  C: "remanufacture",
+  D: "recycle",
+};
+
+export const GRADE_GROUP_LABEL: Record<GradeGroup, string> = {
+  reuse: "재사용",
+  remanufacture: "재제조",
+  recycle: "재활용",
+};
+
 /* --- 외형 오버라이드 매트릭스 (visual_grading.py) ------------------------- */
 
 export type OverrideSeverity = Exclude<VisualSeverity, "PENDING">;
@@ -135,44 +151,44 @@ export const MODEL_SPEC = {
 
 export const HERO = {
   eyebrow: "SOH Classifier",
-  titleLead: "겉모습으로는 알 수 없는",
-  titleMain: "배터리의 남은 수명을\n데이터로 판정합니다.",
-  sub: "충방전 사이클 이력으로 SOH를 예측하고, 팩 사진에서 손상을 탐지합니다. 두 결과를 합쳐 재사용·재제조·재활용 등급을 산출합니다.",
+  titleLead: "배터리 팩의 상태를",
+  titleMain: "SOH와 외형 데이터로\n분석합니다.",
+  sub: "충·방전 데이터로 SOH를 예측합니다. 팩 이미지로 외형 손상을 확인합니다. 두 결과를 종합해 재사용·재제조·재활용 등급을 분류합니다.",
   note: "NLinear · YOLOv8n · FastAPI",
 };
 
 export const PROBLEM = {
   eyebrow: "Problem",
   headline: {
-    line1: "같은 팩을 두 사람이 보면,",
-    line2Pre: "등급도 ",
-    line2Em: "두 개",
-    line2Post: "가 나옵니다.",
+    line1: "같은 배터리 팩인데",
+    line2Pre: "등급이 ",
+    line2Em: "사람마다",
+    line2Post: " 다르게 나옵니다.",
   },
-  lead: "폐배터리의 실제 상태는 외관으로 판단하기 어렵습니다. 기준이 사람에게 있으면 결과도 사람마다 달라집니다.",
+  lead: "폐배터리 상태는 겉모습만으로 판단하기 어렵습니다. 기준이 사람마다 다르면 결과도 매번 달라집니다.",
   items: [
     {
       index: "P-01",
-      title: "재사용 여부를 감으로 결정합니다",
-      body: "그대로 다시 쓸 팩인지, 재제조로 보낼 팩인지를 담당자의 경험에 기대어 판단하는 경우가 많습니다.",
+      title: "재사용 여부를 경험으로 판단합니다",
+      body: "그대로 다시 쓸 팩인지 재제조로 보낼 팩인지를 담당자의 경험에 의존해 판단하는 경우가 많습니다.",
     },
     {
       index: "P-02",
-      title: "같은 스펙인데 등급이 달라집니다",
-      body: "SOH를 측정하더라도 어느 값부터 어느 등급인지에 대한 기준이 문서화되어 있지 않으면 결과가 매번 흔들립니다.",
+      title: "같은 SOH인데 등급이 다르게 나옵니다",
+      body: "SOH를 측정하더라도 어느 값부터 어느 등급인지 기준이 문서화되어 있지 않으면 결과가 매번 달라집니다.",
     },
     {
       index: "P-03",
-      title: "성능 데이터와 외형 상태가 따로 놉니다",
-      body: "사이클 로그는 쌓이는데 스웰링·누액 같은 외형 위험은 별도로 관리돼, 한 화면에서 함께 보는 곳이 없습니다.",
+      title: "성능 데이터와 외형 상태를 따로 관리합니다",
+      body: "사이클 로그는 쌓이는데 스웰링·누액 같은 외형 위험은 따로 기록돼, 한 화면에서 함께 보기 어렵습니다.",
     },
   ],
 };
 
 export const FLOW = {
   eyebrow: "How it works",
-  title: "두 갈래로 분석하고, 마지막에 합칩니다",
-  sub: "성능은 사이클 데이터로, 안전은 사진으로 봅니다. 두 결과가 모두 준비되어야 최종 등급이 확정됩니다.",
+  title: "두 가지 분석을 거쳐 등급을 정합니다",
+  sub: "충·방전 데이터로 성능을 분석합니다. 사진으로 외형 상태를 분석합니다. 두 결과가 모두 있어야 최종 등급이 나옵니다.",
   branches: [
     {
       id: "data",
@@ -180,7 +196,7 @@ export const FLOW = {
       title: "성능 분석",
       steps: [
         {
-          title: "사이클 로그 수집",
+          title: "사이클 로그 입력",
           desc: "사이클별 SOH(%) 또는 용량(Ah)을 직접 입력하거나 CSV로 올립니다.",
           meta: "POST /api/packs/{id}/cycles",
         },
@@ -191,7 +207,7 @@ export const FLOW = {
         },
         {
           title: "SOH 등급 산출",
-          desc: "예측된 SOH를 90 / 80 / 70% 기준에 대입해 A·B·C·D 중 하나를 매깁니다.",
+          desc: "예측된 SOH를 90 / 80 / 70% 기준에 대입해 A·B·C·D 중 하나로 정합니다.",
           meta: "soh_grade",
         },
       ],
@@ -208,7 +224,7 @@ export const FLOW = {
         },
         {
           title: "손상 탐지",
-          desc: "YOLO 모델이 스웰링·누액·부식을 찾고, 확신도 0.65 미만은 오탐으로 보고 버립니다.",
+          desc: "YOLO 모델이 스웰링·누액·부식을 찾습니다. 확신도 0.65 미만은 오탐으로 보고 제외합니다.",
           meta: "swelling · leak · corrosion",
         },
         {
@@ -221,20 +237,20 @@ export const FLOW = {
   ],
   outcome: {
     title: "최종 등급 확정",
-    body: "SOH 등급에 외형 심각도를 겹쳐 최종 등급을 내립니다. 성능이 아무리 좋아도 스웰링이나 누액이 확인되면 등급은 D로 내려갑니다 — 안전이 성능보다 앞섭니다.",
-    gate: "soh_grade + visual_severity 가 모두 있어야 final_grade 가 결정됩니다",
+    body: "SOH 등급에 외형 심각도를 겹쳐 최종 등급을 정합니다. 성능이 좋아도 스웰링이나 누액이 확인되면 등급은 D로 내려갑니다. 안전을 성능보다 우선합니다.",
+    gate: "soh_grade + visual_severity가 모두 있어야 final_grade가 결정됩니다",
   },
 };
 
 export const CAPABILITY = {
   eyebrow: "Capabilities",
-  title: "지금 실제로 배포되어 있는 것",
-  sub: "아래 세 가지가 현재 서버에서 동작하는 기능의 전부입니다. 학습에 사용한 데이터와 검증 수치를 함께 적었습니다.",
+  title: "지금 서버에서 동작하는 기능",
+  sub: "아래 세 가지가 현재 배포된 기능의 전부입니다. 학습에 사용한 데이터와 검증 수치를 함께 적었습니다.",
   cards: [
     {
       kicker: "01 / SOH Prediction",
       title: "다음 사이클의 SOH 예측",
-      body: "NASA 배터리 데이터셋으로 학습한 NLinear 모델이 사이클 이력을 받아 다음 사이클의 SOH(%)를 예측합니다. 학습된 가중치가 없으면 최근 추세를 연장하는 방식으로 대체 동작합니다.",
+      body: "NASA 배터리 데이터셋으로 학습한 NLinear 모델이 사이클 이력을 입력받아 다음 사이클의 SOH(%)를 예측합니다. 학습된 가중치가 없으면 최근 추세를 연장하는 방식으로 대체 동작합니다.",
       specs: [
         { label: "MODEL", value: MODEL_SPEC.soh.version },
         { label: "TRAIN / TEST", value: `${MODEL_SPEC.soh.trainCells} → ${MODEL_SPEC.soh.testCell}` },
@@ -256,7 +272,7 @@ export const CAPABILITY = {
     {
       kicker: "03 / Grade Classification",
       title: "최종 등급 판정과 이력 관리",
-      body: "SOH 등급과 외형 심각도를 매트릭스에 대입해 최종 등급을 확정하고, 팩별 사이클 로그·예측·판정 이력을 대시보드에서 함께 관리합니다.",
+      body: "SOH 등급과 외형 심각도를 매트릭스에 대입해 최종 등급을 정하고, 팩별 사이클 로그·예측·판정 이력을 대시보드에서 함께 관리합니다.",
       specs: [
         { label: "등급", value: "A · B · C · D" },
         { label: "SOH 임계값", value: "90 / 80 / 70 %" },
@@ -269,8 +285,8 @@ export const CAPABILITY = {
 
 export const INTAKE = {
   eyebrow: "Getting started",
-  title: "데이터는 편한 방식으로 넣으세요",
-  sub: "직접 입력이든 CSV든 사진이든, 등급 산출까지는 서비스가 이어서 처리합니다.",
+  title: "데이터 입력 방식은 세 가지입니다",
+  sub: "직접 입력, CSV 업로드, 사진 업로드 중 하나를 쓰면 등급 산출까지 이어집니다.",
   cards: [
     {
       title: "사이클 로그 직접 입력",
@@ -282,7 +298,7 @@ export const INTAKE = {
     },
     {
       title: "외형 사진 업로드",
-      body: "사진 한 장이면 손상 탐지부터 최종 등급 확정까지 자동으로 이어집니다.",
+      body: "사진 한 장을 올리면 손상 탐지부터 최종 등급 확정까지 이어서 처리됩니다.",
     },
   ],
 };
@@ -295,9 +311,9 @@ export const MATRIX = {
 
 export const CLOSING = {
   eyebrow: "Start",
-  title: "배터리 하나로 시작해보세요.",
-  sub: "팩을 등록하고 사이클 로그를 넣으면 SOH 예측이, 사진을 올리면 최종 등급이 나옵니다.",
-  primary: "배터리 등록하고 분석하기",
+  title: "팩을 등록하면 분석을 진행할 수 있습니다.",
+  sub: "사이클 로그를 입력하면 SOH가 예측됩니다. 사진을 올리면 최종 등급이 산출됩니다.",
+  primary: "팩 등록하기",
   secondary: "대시보드 보기",
 };
 
