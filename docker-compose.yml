@@ -23,6 +23,8 @@ services:
     environment:
       DATABASE_URL: mysql+pymysql://soh_user:${MYSQL_PASSWORD}@mysql:3306/soh_db
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      CLOVA_STUDIO_API_KEY: ${CLOVA_STUDIO_API_KEY:-}
+      CLOVA_STUDIO_MODEL: ${CLOVA_STUDIO_MODEL:-HCX-003}
     ports:
       - "8000:8000"
     depends_on:
