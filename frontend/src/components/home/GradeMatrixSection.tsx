@@ -20,7 +20,7 @@ const GRADES: Grade[] = ["A", "B", "C", "D"];
 /**
  * 시뮬레이터는 backend/app/grading.py 의 soh_to_grade 와
  * backend/app/visual_grading.py 의 OVERRIDE_MATRIX 를 그대로 옮긴 것이라
- * 임의 규칙 없이 동일한 결과를 낸다. 표시 전용이며 서버에 아무것도 쓰지 않는다.
+ * 임의 규칙 없이 100% 동일한 결과를 낸다. 표시 전용이며 서버에 아무것도 쓰지 않는다.
  */
 export default function GradeMatrixSection() {
   const [soh, setSoh] = useState(84);
@@ -34,23 +34,29 @@ export default function GradeMatrixSection() {
     <section className="home-section" aria-labelledby="matrix-title">
       <div className="container">
         <div className="reveal">
-          <SectionHeader title={MATRIX.title} sub={MATRIX.sub} titleId="matrix-title" />
+          <SectionHeader
+            eyebrow={MATRIX.eyebrow}
+            title={MATRIX.title}
+            sub={MATRIX.sub}
+            titleId="matrix-title"
+          />
         </div>
 
         <div className="matrix__layout">
+          {/* --- 좌: 규칙 표 ------------------------------------------------ */}
           <div className="matrix-column">
             <div className="matrix-block reveal">
               <div className="matrix-block__head">
-                <h3>SOH에 따른 등급</h3>
-                <p>예측된 SOH를 기준값에 대입해 등급을 정합니다.</p>
+                <h3>SOH 등급 기준</h3>
+                <p>예측된 SOH(%)를 임계값에 대입해 기본 등급을 정합니다.</p>
               </div>
 
               <div className="table-scroll">
-                <table>
+                <table className="grade-table">
                   <thead>
                     <tr>
                       <th scope="col">등급</th>
-                      <th scope="col">SOH</th>
+                      <th scope="col">SOH 범위</th>
                       <th scope="col">판정</th>
                     </tr>
                   </thead>
@@ -61,7 +67,10 @@ export default function GradeMatrixSection() {
                           <GradeBadge grade={row.grade} />
                         </td>
                         <td className="grade-table__soh">{row.sohLabel}</td>
-                        <td className="grade-table__state">{row.state}</td>
+                        <td className="grade-table__state">
+                          {row.state}
+                          <span className="grade-table__note">{row.note}</span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -71,15 +80,18 @@ export default function GradeMatrixSection() {
 
             <div className="matrix-block reveal">
               <div className="matrix-block__head">
-                <h3>외형 상태에 따른 조정</h3>
-                <p>손상이 확인되면 SOH 등급을 그대로 쓰지 않고 낮춥니다.</p>
+                <h3>외형 심각도 오버라이드</h3>
+                <p>
+                  사진에서 손상이 확인되면 SOH 등급을 그대로 쓰지 않고 아래 표대로
+                  낮춥니다.
+                </p>
               </div>
 
               <div className="table-scroll">
                 <table className="override-table">
                   <thead>
                     <tr>
-                      <th scope="col">외형 \ SOH 등급</th>
+                      <th scope="col">외형 \ SOH</th>
                       {GRADES.map((g) => (
                         <th key={g} scope="col">
                           {g}
@@ -94,7 +106,7 @@ export default function GradeMatrixSection() {
                           scope="row"
                           className={`override-table__sev-${sev.toLowerCase()}`}
                         >
-                          {SEVERITY_LABEL[sev]}
+                          {sev}
                         </th>
                         {GRADES.map((g) => {
                           const out = OVERRIDE_MATRIX[sev][g];
@@ -114,23 +126,25 @@ export default function GradeMatrixSection() {
               </div>
 
               <p className="override-table__caption">
-                스웰링이나 누액이 확신도 {SEVERITY_RULE.minConfidence} 이상으로 잡히면
-                심각, 부식만 잡히면 경미, 아무것도 없으면 이상 없음입니다.
+                스웰링·누액이 확신도 {SEVERITY_RULE.minConfidence} 이상으로 탐지되면
+                CRITICAL, 부식만 탐지되면 MODERATE, 그 외에는 OK입니다. CRITICAL이면
+                SOH와 무관하게 최종 등급은 D가 됩니다.
               </p>
             </div>
           </div>
 
+          {/* --- 우: 시뮬레이터 --------------------------------------------- */}
           <div className="matrix-block reveal">
             <div className="matrix-block__head">
-              <h3>직접 확인해 보기</h3>
-              <p>SOH와 외형 상태를 바꾸면 최종 등급이 어떻게 나오는지 보여줍니다.</p>
+              <h3>직접 조절해 보기</h3>
+              <p>SOH와 외형 상태를 바꾸면 최종 등급이 어떻게 나오는지 확인합니다.</p>
             </div>
 
             <div className="simulator">
               <div className="simulator__control">
                 <div className="simulator__control-head">
-                  <label htmlFor="sim-soh">SOH</label>
-                  <span className="simulator__value">{soh}%</span>
+                  <label htmlFor="sim-soh">예측 SOH</label>
+                  <span className="simulator__value">{soh.toFixed(0)}%</span>
                 </div>
                 <input
                   id="sim-soh"
@@ -154,7 +168,7 @@ export default function GradeMatrixSection() {
 
               <div className="simulator__control">
                 <div className="simulator__control-head">
-                  <span id="sim-sev-label">외형 상태</span>
+                  <span id="sim-sev-label">외형 심각도</span>
                 </div>
                 <div
                   className="simulator__severity"
@@ -170,6 +184,7 @@ export default function GradeMatrixSection() {
                       aria-pressed={severity === sev}
                       onClick={() => setSeverity(sev)}
                     >
+                      {sev}
                       <span className="severity-btn__ko">{SEVERITY_LABEL[sev]}</span>
                     </button>
                   ))}
@@ -180,7 +195,7 @@ export default function GradeMatrixSection() {
                 <div className="simulator__result-arrow">
                   <GradeBadge grade={sohGrade} />
                   <span aria-hidden="true">→</span>
-                  <span>{demoted ? "외형 반영해 조정" : "조정 없음"}</span>
+                  <span>{demoted ? "오버라이드 적용" : "변동 없음"}</span>
                 </div>
 
                 <div className="simulator__result-final">
@@ -192,7 +207,8 @@ export default function GradeMatrixSection() {
               </div>
 
               <p className="simulator__disclaimer">
-                실제 등급은 팩을 등록해 분석을 실행할 때 서버가 계산합니다.
+                이 계산은 백엔드의 판정 규칙을 화면에서 그대로 재현한 것입니다. 실제
+                등급은 팩을 등록해 예측을 실행할 때 서버가 산출합니다.
               </p>
             </div>
           </div>

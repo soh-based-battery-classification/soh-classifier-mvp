@@ -13,6 +13,31 @@
   color: var(--text-muted);
 }
 
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--primary);
+  margin: 0;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.eyebrow--on-ink {
+  color: var(--primary-on-ink);
+}
+
 /* --- Section header ------------------------------------------------------- */
 
 .section-header {
@@ -305,26 +330,6 @@
   margin-top: 0;
 }
 
-.card__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
-}
-
-.card__title {
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
-  margin: 0 0 2px;
-}
-
-.card__search {
-  flex: 0 1 260px;
-  min-width: 180px;
-}
-
 /* --- Grade badge ---------------------------------------------------------- */
 
 .grade-badge {
@@ -443,13 +448,7 @@
 .page-header__title {
   font-size: var(--fs-2xl);
   font-weight: var(--fw-bold);
-  margin: 0 0 var(--space-1);
-}
-
-.page-header__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+  margin: var(--space-1) 0 var(--space-1);
 }
 
 /* --- Forms ---------------------------------------------------------------- */
@@ -669,333 +668,4 @@
     opacity: 1;
     transform: none;
   }
-}
-
-/* ===========================================================================
-   Dashboard — 현황 요약
-   =========================================================================== */
-
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
-}
-
-.metric {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-card);
-}
-
-.metric__label {
-  font-size: var(--fs-sm);
-  color: var(--text-sub);
-  font-weight: var(--fw-medium);
-}
-
-.metric__value {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--fs-3xl);
-  font-weight: var(--fw-bold);
-  line-height: 1.1;
-  color: var(--text-main);
-}
-
-.metric__value--a { color: var(--grade-a); }
-.metric__value--c { color: var(--grade-c); }
-.metric__value--d { color: var(--grade-d); }
-
-.metric__foot {
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-}
-
-@media (max-width: 900px) {
-  .metrics {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 480px) {
-  .metrics {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-/* --- 표 셀 보조 ------------------------------------------------------------ */
-
-.cell-right {
-  text-align: right;
-}
-
-.cell-grade {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.table-link {
-  font-weight: var(--fw-semibold);
-  text-decoration: none;
-}
-
-.table-link:hover {
-  text-decoration: underline;
-}
-
-.text-muted {
-  color: var(--text-muted);
-}
-
-/* --- 상태 칩 --------------------------------------------------------------- */
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-xs);
-  border: 1px solid var(--border);
-  background: var(--bg-subtle);
-  color: var(--text-muted);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
-  white-space: nowrap;
-}
-
-.chip--ok {
-  border-color: #bbf7d0;
-  background: var(--success-soft);
-  color: var(--sev-ok);
-}
-
-.chip--moderate {
-  border-color: #fde68a;
-  background: var(--warning-soft);
-  color: var(--sev-moderate);
-}
-
-.chip--critical {
-  border-color: #fecaca;
-  background: var(--danger-soft);
-  color: var(--sev-critical);
-}
-
-/* ===========================================================================
-   팩 등록 — 단계형 입력
-   =========================================================================== */
-
-.register {
-  max-width: 780px;
-}
-
-.form-step {
-  padding: var(--space-6) 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.form-step:first-of-type {
-  padding-top: 0;
-}
-
-.form-step--last {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.form-step__head {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-}
-
-.form-step__num {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  margin-top: 2px;
-  border-radius: var(--radius-xs);
-  background: var(--ink-800);
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: var(--fs-2xs);
-  font-weight: var(--fw-bold);
-}
-
-.form-step__title {
-  font-size: var(--fs-md);
-  font-weight: var(--fw-bold);
-  margin: 0 0 2px;
-}
-
-.form-step__optional {
-  margin-left: var(--space-2);
-  padding: 1px var(--space-2);
-  border-radius: var(--radius-xs);
-  background: var(--bg-subtle);
-  color: var(--text-muted);
-  font-size: var(--fs-2xs);
-  font-weight: var(--fw-medium);
-  vertical-align: middle;
-}
-
-.form-step__body {
-  margin-top: var(--space-4);
-  padding-left: calc(24px + var(--space-3));
-}
-
-@media (max-width: 560px) {
-  .form-step__body {
-    padding-left: 0;
-  }
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-4);
-}
-
-.register__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-/* --- 드롭존 ---------------------------------------------------------------- */
-
-.dropzone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-8) var(--space-5);
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-md);
-  background: var(--bg-inset);
-  text-align: center;
-  transition: border-color var(--dur-fast) ease, background-color var(--dur-fast) ease;
-}
-
-.dropzone.is-dragging {
-  border-color: var(--primary);
-  background: var(--primary-soft);
-}
-
-.dropzone.is-filled {
-  border-style: solid;
-  border-color: var(--border);
-  background: var(--bg-card);
-  padding-block: var(--space-5);
-}
-
-.dropzone__title {
-  font-size: var(--fs-base);
-  font-weight: var(--fw-semibold);
-  color: var(--text-main);
-}
-
-.dropzone__hint {
-  font-size: var(--fs-sm);
-  color: var(--text-muted);
-}
-
-.dropzone__filename {
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--text-main);
-  word-break: break-all;
-}
-
-.dropzone__state {
-  font-size: var(--fs-xs);
-  color: var(--sev-ok);
-  font-weight: var(--fw-semibold);
-}
-
-.dropzone__preview {
-  max-height: 160px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  margin-bottom: var(--space-2);
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* --- 실행 결과 로그 --------------------------------------------------------- */
-
-.run-log {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 var(--space-6);
-  border-top: 1px solid var(--border);
-}
-
-.run-log__item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--border);
-  font-size: var(--fs-sm);
-}
-
-.run-log__mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
-  background: var(--bg-subtle);
-  color: var(--text-muted);
-}
-
-.run-log__item--ok .run-log__mark {
-  background: var(--success-soft);
-  color: var(--sev-ok);
-}
-
-.run-log__item--fail .run-log__mark {
-  background: var(--danger-soft);
-  color: var(--sev-critical);
-}
-
-.run-log__label {
-  font-weight: var(--fw-semibold);
-}
-
-.run-log__detail {
-  margin-left: auto;
-  text-align: right;
-  color: var(--text-sub);
-  font-size: var(--fs-xs);
-}
-
-.run-log__item--fail .run-log__detail {
-  color: var(--danger);
 }

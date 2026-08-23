@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="container">
         <div className="site-footer__top">
-          <span className="site-footer__brand">배터리 등급 분류</span>
+          <span className="site-footer__brand">SOH Classifier</span>
 
           <nav className="site-footer__nav" aria-label="푸터 메뉴">
             <Link to="/">소개</Link>

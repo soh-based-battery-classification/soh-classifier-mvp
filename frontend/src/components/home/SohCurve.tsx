@@ -53,10 +53,10 @@ const CURVE_PATH = POINTS.map(
 const LAST = POINTS[POINTS.length - 1];
 
 const BANDS = [
-  { grade: "A", top: PAD_T, bottom: yOf(90), color: "#15803d" },
-  { grade: "B", top: yOf(90), bottom: yOf(80), color: "#2563eb" },
-  { grade: "C", top: yOf(80), bottom: yOf(70), color: "#d97706" },
-  { grade: "D", top: yOf(70), bottom: PAD_T + plotH, color: "#dc2626" },
+  { grade: "A", top: PAD_T, bottom: yOf(90), color: "#22c55e" },
+  { grade: "B", top: yOf(90), bottom: yOf(80), color: "#5b9bff" },
+  { grade: "C", top: yOf(80), bottom: yOf(70), color: "#f59e0b" },
+  { grade: "D", top: yOf(70), bottom: PAD_T + plotH, color: "#ef4444" },
 ];
 
 export default function SohCurve() {
@@ -69,8 +69,13 @@ export default function SohCurve() {
     >
       <defs>
         <linearGradient id="soh-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#2563eb" stopOpacity="0.14" />
-          <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+          <stop offset="0%" stopColor="#5b9bff" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#5b9bff" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="soh-stroke" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#7dd3fc" />
+          <stop offset="70%" stopColor="#5b9bff" />
+          <stop offset="100%" stopColor="#a5b4fc" />
         </linearGradient>
       </defs>
 
@@ -83,7 +88,7 @@ export default function SohCurve() {
           width={plotW}
           height={Math.max(0, b.bottom - b.top)}
           fill={b.color}
-          opacity="0.055"
+          opacity="0.05"
         />
       ))}
 
@@ -119,7 +124,8 @@ export default function SohCurve() {
             x={PAD_L + plotW + 12}
             y={mid + 3.5}
             fill={b.color}
-            >
+            opacity="0.9"
+          >
             {b.grade}
           </text>
         );
@@ -131,7 +137,7 @@ export default function SohCurve() {
         y1={PAD_T + plotH}
         x2={PAD_L + plotW}
         y2={PAD_T + plotH}
-        stroke="#cbd5e1"
+        stroke="rgba(147,164,191,0.28)"
         strokeWidth="1"
       />
       <text className="soh-chart__axis-label" x={PAD_L} y={H - 8}>
@@ -168,18 +174,26 @@ export default function SohCurve() {
         className="soh-chart__curve"
         d={CURVE_PATH}
         pathLength={1}
-        stroke="#2563eb"
+        stroke="url(#soh-stroke)"
       />
 
       {/* 현재 지점 마커 */}
       <g className="soh-chart__marker">
-        <circle cx={LAST.x} cy={LAST.y} r="4" fill="#ffffff" />
+        <circle
+          className="soh-chart__pulse"
+          cx={LAST.x}
+          cy={LAST.y}
+          r="5"
+          fill="#5b9bff"
+          opacity="0.5"
+        />
+        <circle cx={LAST.x} cy={LAST.y} r="4.5" fill="#0b1424" />
         <circle
           cx={LAST.x}
           cy={LAST.y}
-          r="4"
+          r="4.5"
           fill="none"
-          stroke="#2563eb"
+          stroke="#93c5fd"
           strokeWidth="2"
         />
       </g>

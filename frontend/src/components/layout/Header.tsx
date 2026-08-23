@@ -14,7 +14,7 @@ export default function Header() {
           <span className="site-header__mark" aria-hidden="true">
             SOH
           </span>
-          <span>배터리 등급 분류</span>
+          <span>Classifier</span>
         </Link>
 
         <nav className="site-header__nav" aria-label="주요 메뉴">

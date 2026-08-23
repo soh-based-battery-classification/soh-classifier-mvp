@@ -184,6 +184,7 @@ export default function PackDetail() {
       {/* 헤더 섹션 */}
       <div className="page-header">
         <div>
+          <p className="eyebrow">Pack Detail</p>
           <h1 className="page-header__title">{detail.pack.pack_id}</h1>
           <p className="hint-text">
             모델명: {detail.pack.model_name} · 정격 용량: {detail.pack.rated_capacity} Ah
@@ -198,7 +199,7 @@ export default function PackDetail() {
 
       {/* 최종 등급 & 사진 업로드 카드 */}
       <div className="card">
-        <h2>등급 및 외형 상태</h2>
+        <h2>최종 등급 및 외형 검사</h2>
         <div className="pack-grade-row">
           SOH 등급: <GradeBadge grade={detail.final_state?.soh_grade} /> &nbsp;→&nbsp; 최종 등급:{" "}
           <GradeBadge grade={detail.final_state?.final_grade} />
@@ -208,7 +209,7 @@ export default function PackDetail() {
           {detail.final_state?.final_state ? ` · ${detail.final_state.final_state}` : ""}
         </p>
         <p className="hint-text">
-          팩 사진을 올리면 스웰링·누액·부식을 확인해 외형 상태를 판정합니다.
+          팩 사진을 올리면 YOLO가 부품을 탐지해 외형 상태를 자동으로 판정합니다.
         </p>
 
         <div className="inline-form" style={{ marginTop: "var(--space-4)" }}>
@@ -241,7 +242,7 @@ export default function PackDetail() {
 
         <hr className="divider" />
 
-        <p className="hint-text">외형 상태 직접 지정</p>
+        <p className="hint-text">외형 상태 직접 지정 (수동 오버라이드 테스트)</p>
         <div className="inline-form">
           <button disabled={busy} onClick={() => handleSeverity("OK")}>OK</button>
           <button disabled={busy} onClick={() => handleSeverity("MODERATE")}>MODERATE</button>
@@ -251,9 +252,9 @@ export default function PackDetail() {
 
       {/* 사이클 로그 추가 카드 */}
       <div className="card">
-        <h2>배터리 데이터</h2>
+        <h2>사이클 로그 추가 및 SOH 예측</h2>
         <p className="hint-text">
-          등록된 사이클 로그로 다음 사이클의 SOH를 예측합니다.
+          등록된 사이클 로그를 기반으로 NLinear 모델이 다음 사이클의 SOH(%)를 예측합니다.
           {latestPrediction && (
             <span className="pack-latest-pred">
                최근 예측: {latestPrediction.predicted_soh.toFixed(2)}% ({latestPrediction.grade}등급)
