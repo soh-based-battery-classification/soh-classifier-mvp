@@ -86,7 +86,7 @@ export default function PackResult() {
         </dl>
       </div>
 
-      <div className="hero-actions">
+      <div className="result-actions">
         <Link to={`/packs/${packId}`} className="btn-primary">
           팩 상세로 돌아가기
         </Link>

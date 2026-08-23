@@ -1,0 +1,220 @@
+/* ===========================================================================
+   Base layer — reset, document defaults, native element styling
+   =========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  background:
+    linear-gradient(rgba(16, 19, 30, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 19, 30, 0.035) 1px, transparent 1px),
+    var(--bg-main);
+  background-size: 32px 32px, 32px 32px, auto;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-snug);
+  color: var(--text-main);
+}
+
+p {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+}
+
+a {
+  color: var(--primary);
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* --- App shell ------------------------------------------------------------ */
+
+.app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1 0 auto;
+}
+
+/* 일반 페이지(대시보드/등록/상세)는 컨테이너 폭 안에서 렌더된다.
+   Home은 full-bleed 섹션을 직접 그리므로 .app-main--flush 를 쓴다. */
+.app-main--contained {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-8) var(--gutter) var(--space-20);
+  animation: fade-up var(--dur-base) var(--ease-out);
+}
+
+.app-main--flush {
+  width: 100%;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Layout helper -------------------------------------------------------- */
+
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+/* --- Tables --------------------------------------------------------------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+
+th {
+  background: var(--bg-subtle);
+  color: var(--text-sub);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+
+tbody tr {
+  transition: background-color var(--dur-fast) ease;
+}
+
+tbody tr:hover {
+  background-color: var(--bg-inset);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* 좁은 화면에서 표가 넘칠 때 감싸는 래퍼 */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- Form elements -------------------------------------------------------- */
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+  font-size: var(--fs-sm);
+}
+
+input,
+select,
+textarea {
+  padding: 10px var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  color: var(--text-main);
+  outline: none;
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.15);
+}
+
+button {
+  min-height: 40px;
+  padding: 9px var(--space-4);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--ink-800);
+  color: #fff;
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease, transform var(--dur-fast) ease,
+    opacity var(--dur-fast) ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--ink-700);
+}
+
+button:disabled {
+  background: var(--border-strong);
+  cursor: not-allowed;
+}
+
+/* --- Focus visibility (전역 접근성 바닥선) -------------------------------- */
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* --- Reduced motion ------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
