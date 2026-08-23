@@ -1,5 +1,6 @@
 import { Link, useLocation, useParams } from "react-router-dom";
 import GradeBadge from "../components/GradeBadge";
+import GradeChatbot from "../components/GradeChatbot";
 import type { DetectionResult, PackDetail } from "../types";
 
 interface LocationState {
@@ -85,6 +86,8 @@ export default function PackResult() {
           </div>
         </dl>
       </div>
+
+      {packId && <GradeChatbot packId={packId} />}
 
       <div className="result-actions">
         <Link to={`/packs/${packId}`} className="btn-primary">

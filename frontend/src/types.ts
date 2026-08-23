@@ -57,3 +57,13 @@ export interface DetectionResult {
   visual_severity: VisualSeverity;
   objects: DetectionObject[];
 }
+
+export interface Industry {
+  key: string;
+  label: string;
+}
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}

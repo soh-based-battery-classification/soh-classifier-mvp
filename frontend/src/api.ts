@@ -1,7 +1,9 @@
 import type {
+  ChatMessage,
   CycleLog,
   DetectionResult,
   FinalState,
+  Industry,
   Pack,
   PackDetail,
   Prediction,
@@ -80,4 +82,12 @@ export const api = {
   visionModelStatus: () => request<{ is_ready: boolean; model_dir: string }>(
     "/api/packs/_vision_model/status"
   ),
+
+  listIndustries: () => request<Industry[]>("/api/packs/_chatbot/industries"),
+
+  chat: (packId: string, industry: string, messages: ChatMessage[]) =>
+    request<ChatMessage>(`/api/packs/${packId}/chat`, {
+      method: "POST",
+      body: JSON.stringify({ industry, messages }),
+    }),
 };
