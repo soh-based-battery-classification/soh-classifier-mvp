@@ -19,6 +19,7 @@ from ..database import get_db
 from ..grading import GRADE_TO_STATE
 from ..ml.yolo_detector import PartDetector
 from ..visual_grading import apply_visual_override, estimate_severity_from_detections
+from .soh import run_prediction
 
 router = APIRouter(prefix="/api/packs", tags=["detection"])
 
@@ -68,6 +69,11 @@ async def detect_pack_image(pack_id: str, file: UploadFile = File(...), db: Sess
         detections = _detector.detect(image_bytes)
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"이미지를 처리할 수 없습니다: {e}")
+
+    # 사이클 로그는 있는데 아직 SOH 예측(soh_grade)이 안 된 상태로 사진을 올리면
+    # 최종 등급이 계산되지 않고 조용히 넘어가던 문제 -> 여기서 자동으로 예측을 실행해준다.
+    if pack.cycle_logs and (pack.final_state is None or pack.final_state.soh_grade is None):
+        run_prediction(db, pack)
 
     result = models_db.DetectionResult(pack_id=pack_id, model_version=_detector.model_version)
     db.add(result)
