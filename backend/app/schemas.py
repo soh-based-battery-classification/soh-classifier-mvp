@@ -86,3 +86,23 @@ class PackDetailOut(BaseModel):
     cycle_logs: list[CycleLogOut]
     predictions: list[PredictionOut]
     final_state: Optional[FinalStateOut]
+
+
+class ChatMessageIn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class ChatRequest(BaseModel):
+    industry: str
+    messages: list[ChatMessageIn]
+
+
+class ChatResponse(BaseModel):
+    role: Literal["assistant"] = "assistant"
+    content: str
+
+
+class IndustryOut(BaseModel):
+    key: str
+    label: str

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from . import models_db
 from .config import CORS_ORIGINS
 from .database import Base, engine
-from .routers import detection, packs, soh
+from .routers import chatbot, detection, packs, soh
 
 Base.metadata.create_all(bind=engine)
 
@@ -21,6 +21,7 @@ app.add_middleware(
 app.include_router(packs.router)
 app.include_router(soh.router)
 app.include_router(detection.router)
+app.include_router(chatbot.router)
 
 
 @app.get("/api/health")
