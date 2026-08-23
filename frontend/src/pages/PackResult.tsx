@@ -35,7 +35,7 @@ export default function PackResult() {
         <p className="hint-text">
           {pack.pack_id} · {pack.model_name}
         </p>
-        <h1>최종 등급이 확정됐습니다</h1>
+        <h1>최종 등급</h1>
         <div className="result-grade-badge">
           <GradeBadge grade={final_state?.final_grade} />
         </div>
@@ -86,7 +86,7 @@ export default function PackResult() {
         </dl>
       </div>
 
-      <div className="hero-actions">
+      <div className="result-actions">
         <Link to={`/packs/${packId}`} className="btn-primary">
           팩 상세로 돌아가기
         </Link>

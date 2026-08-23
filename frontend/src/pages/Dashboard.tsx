@@ -1,38 +1,46 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import GradeBadge from "../components/GradeBadge";
 import { api } from "../api";
-import type { Pack } from "../types";
-import "../index.css";
+import { SEVERITY_LABEL } from "../content/home";
+import { useDashboardData } from "../hooks/useDashboardData";
+import type { PackRow } from "../hooks/useDashboardData";
+
+function formatDate(value: string | null): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
+    d.getDate()
+  ).padStart(2, "0")}`;
+}
+
+function severityClass(row: PackRow): string {
+  switch (row.visualSeverity) {
+    case "OK":
+      return "chip chip--ok";
+    case "MODERATE":
+      return "chip chip--moderate";
+    case "CRITICAL":
+      return "chip chip--critical";
+    default:
+      return "chip";
+  }
+}
 
 export default function Dashboard() {
-  const [packs, setPacks] = useState<Pack[]>([]);
+  const { data, loading, error, reload, setError } = useDashboardData();
   const [query, setQuery] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  function loadPacks() {
-    setLoading(true);
-    return api
-      .listPacks()
-      .then(setPacks)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    loadPacks();
-  }, []);
-
   async function handleDelete(packId: string) {
-    if (!confirm(`'${packId}' 팩을 삭제할까요? 사이클 로그/예측 이력도 함께 삭제됩니다.`)) {
+    if (!confirm(`'${packId}' 팩을 삭제할까요? 사이클 로그와 분석 이력도 함께 삭제됩니다.`)) {
       return;
     }
     setError(null);
     setDeletingId(packId);
     try {
       await api.deletePack(packId);
-      await loadPacks();
+      await reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -40,145 +48,163 @@ export default function Dashboard() {
     }
   }
 
-  const filteredPacks = packs.filter((p) => {
+  const rows = data.rows.filter((row) => {
     const q = query.trim().toLowerCase();
     if (!q) return true;
     return (
-      p.pack_id.toLowerCase().includes(q) ||
-      p.model_name.toLowerCase().includes(q)
+      row.pack.pack_id.toLowerCase().includes(q) ||
+      row.pack.model_name.toLowerCase().includes(q)
     );
   });
 
+  const pending = data.total - data.analyzed;
+
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto", paddingBottom: "3rem" }}>
-      {/* 헤더 섹션 */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+    <div>
+      <div className="page-header">
         <div>
-          <p className="section-eyebrow" style={{ margin: 0 }}>Dashboard</p>
-          <h1 style={{ margin: "0.2rem 0" }}>배터리 팩 대시보드</h1>
-          <p className="hint-text">
-            등록된 모든 배터리 팩의 정보와 이력을 조회하고 관리합니다.
-          </p>
+          <h1 className="page-header__title">대시보드</h1>
+          <p className="hint-text">등록된 배터리 팩의 분석 현황을 확인합니다.</p>
         </div>
-        <Link to="/register" className="btn-primary" style={{ textDecoration: "none" }}>
-          + 새 팩 등록
-        </Link>
+        <div className="page-header__actions">
+          <button type="button" className="btn-ghost btn-sm" onClick={reload} disabled={loading}>
+            {loading ? "불러오는 중" : "새로고침"}
+          </button>
+          <Link to="/register" className="btn-primary btn-sm">
+            팩 등록
+          </Link>
+        </div>
       </div>
 
-      {error && (
-        <p className="hint-text" style={{ color: "#ef4444", marginBottom: "1rem" }}>
-          ⚠️ {error}
-        </p>
-      )}
+      {error && <p className="alert-error">{error}</p>}
 
-      {/* 검색 및 새로고침 카드 */}
-      <div className="card" style={{ marginBottom: "1.5rem" }}>
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
+      {/* --- 현황 요약 --------------------------------------------------- */}
+      <section className="metrics" aria-label="분석 현황 요약">
+        <div className="metric">
+          <span className="metric__label">전체 팩</span>
+          <span className="metric__value">{data.total}</span>
+          <span className="metric__foot">분석 완료 {data.analyzed} · 대기 {pending}</span>
+        </div>
+        <div className="metric">
+          <span className="metric__label">재사용</span>
+          <span className="metric__value metric__value--a">{data.reuse}</span>
+          <span className="metric__foot">A · B 등급</span>
+        </div>
+        <div className="metric">
+          <span className="metric__label">재제조</span>
+          <span className="metric__value metric__value--c">{data.remanufacture}</span>
+          <span className="metric__foot">C 등급</span>
+        </div>
+        <div className="metric">
+          <span className="metric__label">재활용</span>
+          <span className="metric__value metric__value--d">{data.recycle}</span>
+          <span className="metric__foot">D 등급</span>
+        </div>
+      </section>
+
+      {/* --- 분석 결과 --------------------------------------------------- */}
+      <section className="card" aria-label="분석 결과 목록">
+        <div className="card__head">
+          <div>
+            <h2 className="card__title">분석 결과</h2>
+            <p className="hint-text">최근에 분석된 팩부터 표시합니다.</p>
+          </div>
           <input
-            type="text"
-            placeholder="Pack ID 또는 모델명 검색..."
+            type="search"
+            className="card__search"
+            placeholder="Pack ID 또는 모델명"
+            aria-label="Pack ID 또는 모델명 검색"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            style={{
-              flex: "1",
-              minWidth: "240px",
-              padding: "0.75rem",
-              borderRadius: "8px",
-              border: "1px solid #cbd5e1",
-              boxSizing: "border-box"
-            }}
           />
-          <button 
-            type="button" 
-            onClick={loadPacks} 
-            disabled={loading}
-            style={{ padding: "0.75rem 1.2rem", borderRadius: "8px", cursor: "pointer" }}
-          >
-            {loading ? "불러오는 중..." : "새로고침"}
-          </button>
-        </div>
-      </div>
-
-      {/* 팩 목록 테이블 카드 */}
-      <div className="card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-          <h2 style={{ margin: 0 }}>등록 목록 ({filteredPacks.length})</h2>
         </div>
 
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
-              <th style={{ padding: "0.75rem" }}>Pack ID</th>
-              <th style={{ padding: "0.75rem" }}>모델명</th>
-              <th style={{ padding: "0.75rem" }}>정격 용량 (Ah)</th>
-              <th style={{ padding: "0.75rem" }}>등록일</th>
-              <th style={{ padding: "0.75rem" }}></th>
-              <th style={{ padding: "0.75rem", textAlign: "right" }}>관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPacks.map((p) => (
-              <tr key={p.pack_id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                <td style={{ padding: "0.75rem", fontWeight: "600" }}>
-                  <Link to={`/packs/${p.pack_id}`} style={{ color: "#2563eb", textDecoration: "none" }}>
-                    {p.pack_id}
-                  </Link>
-                </td>
-                <td style={{ padding: "0.75rem" }}>{p.model_name}</td>
-                <td style={{ padding: "0.75rem" }}>{p.rated_capacity} Ah</td>
-                <td style={{ padding: "0.75rem", fontSize: "0.9rem", color: "#64748b" }}>
-                  {new Date(p.registered_at).toLocaleString()}
-                </td>
-                <td style={{ padding: "0.75rem" }}>
-                  <Link 
-                    to={`/packs/${p.pack_id}`} 
-                    style={{ 
-                      padding: "0.4rem 0.8rem", 
-                      backgroundColor: "#f1f5f9", 
-                      borderRadius: "6px", 
-                      color: "#334155", 
-                      textDecoration: "none", 
-                      fontSize: "0.85rem",
-                      fontWeight: "500" 
-                    }}
-                  >
-                    상세 보기 →
-                  </Link>
-                </td>
-                <td style={{ padding: "0.75rem", textAlign: "right" }}>
-                  <button 
-                    disabled={deletingId === p.pack_id} 
-                    onClick={() => handleDelete(p.pack_id)}
-                    style={{
-                      backgroundColor: "transparent",
-                      color: "#ef4444",
-                      border: "none",
-                      cursor: deletingId === p.pack_id ? "not-allowed" : "pointer",
-                      fontWeight: "500"
-                    }}
-                  >
-                    {deletingId === p.pack_id ? "삭제 중..." : "삭제"}
-                  </button>
-                </td>
-              </tr>
-            ))}
-
-            {!loading && filteredPacks.length === 0 && (
+        <div className="table-scroll">
+          <table>
+            <thead>
               <tr>
-                <td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "#64748b" }}>
-                  {query ? (
-                    "검색 결과와 일치하는 배터리 팩이 없습니다."
-                  ) : (
-                    <>
-                      등록된 팩이 없습니다. <Link to="/register" style={{ color: "#2563eb" }}>팩 등록</Link>부터 시작하세요.
-                    </>
-                  )}
-                </td>
+                <th scope="col">Pack ID</th>
+                <th scope="col">모델</th>
+                <th scope="col">SOH</th>
+                <th scope="col">이미지 분석</th>
+                <th scope="col">최종 등급</th>
+                <th scope="col">분석일</th>
+                <th scope="col" className="cell-right">
+                  관리
+                </th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.pack.pack_id}>
+                  <td>
+                    <Link to={`/packs/${row.pack.pack_id}`} className="table-link">
+                      {row.pack.pack_id}
+                    </Link>
+                  </td>
+                  <td className="hint-text">{row.pack.model_name}</td>
+                  <td className="num">
+                    {row.sohPercent !== null ? (
+                      `${row.sohPercent.toFixed(1)}%`
+                    ) : (
+                      <span className="text-muted">미예측</span>
+                    )}
+                  </td>
+                  <td>
+                    <span className={severityClass(row)}>
+                      {SEVERITY_LABEL[row.visualSeverity]}
+                    </span>
+                  </td>
+                  <td>
+                    {row.finalGrade ? (
+                      <span className="cell-grade">
+                        <GradeBadge grade={row.finalGrade} />
+                        <span className="hint-text">{row.finalState}</span>
+                      </span>
+                    ) : (
+                      <span className="text-muted">대기</span>
+                    )}
+                  </td>
+                  <td className="num text-muted">{formatDate(row.analyzedAt)}</td>
+                  <td className="cell-right">
+                    <button
+                      className="btn-danger-quiet"
+                      disabled={deletingId === row.pack.pack_id}
+                      onClick={() => handleDelete(row.pack.pack_id)}
+                    >
+                      {deletingId === row.pack.pack_id ? "삭제 중" : "삭제"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+
+              {loading && data.total === 0 && (
+                <tr>
+                  <td colSpan={7} className="empty-cell">
+                    불러오는 중입니다.
+                  </td>
+                </tr>
+              )}
+
+              {!loading && rows.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="empty-cell">
+                    {query ? (
+                      "검색 결과가 없습니다."
+                    ) : (
+                      <>
+                        등록된 팩이 없습니다.{" "}
+                        <Link to="/register">첫 배터리 팩을 등록</Link>하면 여기에
+                        표시됩니다.
+                      </>
+                    )}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

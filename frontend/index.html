@@ -3,7 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SOH 배터리 등급 분류</title>
+    <meta name="theme-color" content="#070d18" />
+    <title>SOH Classifier · 폐배터리 등급 분류</title>
+    <meta
+      name="description"
+      content="충방전 사이클 이력으로 SOH를 예측하고 팩 사진에서 손상을 탐지해, 폐배터리의 재사용·재제조·재활용 등급을 산출합니다."
+    />
+
+    <!-- Pretendard: CSS @import 대신 <link> 로 선로드해 렌더 블로킹을 줄인다 -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
   </head>
   <body>
     <div id="root"></div>

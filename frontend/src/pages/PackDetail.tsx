@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../api";
 import GradeBadge from "../components/GradeBadge";
 import type { DetectionResult, PackDetail as PackDetailType, VisualSeverity } from "../types";
-import "../index.css";
 
 export default function PackDetail() {
   const { packId } = useParams<{ packId: string }>();
@@ -175,44 +174,32 @@ export default function PackDetail() {
   }
 
   if (!detail) {
-    return <p className="hint-text" style={{ padding: "2rem" }}>{error ?? "불러오는 중..."}</p>;
+    return <p className="hint-text">{error ?? "불러오는 중..."}</p>;
   }
 
   const latestPrediction = detail.predictions[0];
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", paddingBottom: "3rem" }}>
+    <div>
       {/* 헤더 섹션 */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+      <div className="page-header">
         <div>
-          <p className="section-eyebrow" style={{ margin: 0 }}>Pack Detail</p>
-          <h1 style={{ margin: "0.2rem 0" }}>{detail.pack.pack_id}</h1>
+          <h1 className="page-header__title">{detail.pack.pack_id}</h1>
           <p className="hint-text">
             모델명: {detail.pack.model_name} · 정격 용량: {detail.pack.rated_capacity} Ah
           </p>
         </div>
-        <button 
-          disabled={busy} 
-          onClick={handleDeletePack}
-          style={{ 
-            backgroundColor: "#ef4444", 
-            color: "#fff", 
-            border: "none", 
-            padding: "0.5rem 1rem", 
-            borderRadius: "6px",
-            cursor: "pointer"
-          }}
-        >
+        <button className="btn-danger" disabled={busy} onClick={handleDeletePack}>
           이 팩 삭제
         </button>
       </div>
 
-      {error && <p className="hint-text" style={{ color: "#ef4444", marginBottom: "1rem" }}>⚠️ {error}</p>}
+      {error && <p className="alert-error">⚠️ {error}</p>}
 
       {/* 최종 등급 & 사진 업로드 카드 */}
-      <div className="card" style={{ marginBottom: "1.5rem" }}>
-        <h2 style={{ marginTop: 0 }}>최종 등급 및 외형 검사</h2>
-        <div style={{ fontSize: "1.1rem", margin: "1rem 0" }}>
+      <div className="card">
+        <h2>등급 및 외형 상태</h2>
+        <div className="pack-grade-row">
           SOH 등급: <GradeBadge grade={detail.final_state?.soh_grade} /> &nbsp;→&nbsp; 최종 등급:{" "}
           <GradeBadge grade={detail.final_state?.final_grade} />
         </div>
@@ -221,10 +208,10 @@ export default function PackDetail() {
           {detail.final_state?.final_state ? ` · ${detail.final_state.final_state}` : ""}
         </p>
         <p className="hint-text">
-          팩 사진을 올리면 YOLO가 부품을 탐지해 외형 상태를 자동으로 판정합니다.
+          팩 사진을 올리면 스웰링·누액·부식을 확인해 외형 상태를 판정합니다.
         </p>
 
-        <div className="inline-form" style={{ marginTop: "1rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <div className="inline-form" style={{ marginTop: "var(--space-4)" }}>
           <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} />
           <button className="btn-primary" disabled={detecting || !imageFile} onClick={handleImageUpload}>
             {detecting ? "탐지 중..." : "사진 업로드 & 탐지"}
@@ -232,13 +219,11 @@ export default function PackDetail() {
         </div>
 
         {imagePreviewUrl && (
-          <div style={{ marginTop: "1rem" }}>
-            <img src={imagePreviewUrl} alt="업로드할 사진 미리보기" className="detect-preview" style={{ maxHeight: "250px", borderRadius: "8px" }} />
-          </div>
+          <img src={imagePreviewUrl} alt="업로드할 사진 미리보기" className="detect-preview" />
         )}
 
         {lastDetection && (
-          <div className="detect-result" style={{ marginTop: "1rem", padding: "1rem", backgroundColor: "#f8fafc", borderRadius: "8px" }}>
+          <div className="detect-result">
             <p className="hint-text">
               탐지 결과 {lastDetection.objects.length}개 · 판정: {lastDetection.visual_severity} · 모델: {lastDetection.model_version}
             </p>
@@ -254,10 +239,10 @@ export default function PackDetail() {
           </div>
         )}
 
-        <hr style={{ margin: "1.5rem 0", border: "none", borderTop: "1px solid #e5e7eb" }} />
+        <hr className="divider" />
 
-        <p className="hint-text">외형 상태 직접 지정 (수동 오버라이드 테스트)</p>
-        <div className="inline-form" style={{ display: "flex", gap: "0.5rem" }}>
+        <p className="hint-text">외형 상태 직접 지정</p>
+        <div className="inline-form">
           <button disabled={busy} onClick={() => handleSeverity("OK")}>OK</button>
           <button disabled={busy} onClick={() => handleSeverity("MODERATE")}>MODERATE</button>
           <button disabled={busy} onClick={() => handleSeverity("CRITICAL")}>CRITICAL</button>
@@ -265,19 +250,19 @@ export default function PackDetail() {
       </div>
 
       {/* 사이클 로그 추가 카드 */}
-      <div className="card" style={{ marginBottom: "1.5rem" }}>
-        <h2 style={{ marginTop: 0 }}>사이클 로그 추가 및 SOH 예측</h2>
+      <div className="card">
+        <h2>배터리 데이터</h2>
         <p className="hint-text">
-          등록된 사이클 로그를 기반으로 NLinear 모델이 다음 사이클의 SOH(%)를 예측합니다.
+          등록된 사이클 로그로 다음 사이클의 SOH를 예측합니다.
           {latestPrediction && (
-            <span style={{ display: "block", color: "#2563eb", fontWeight: "600", marginTop: "0.3rem" }}>
+            <span className="pack-latest-pred">
                최근 예측: {latestPrediction.predicted_soh.toFixed(2)}% ({latestPrediction.grade}등급)
             </span>
           )}
         </p>
 
-        <form className="inline-form" onSubmit={handleAddCycle} style={{ display: "flex", gap: "1rem", alignItems: "flex-end", flexWrap: "wrap", marginTop: "1rem" }}>
-          <label style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+        <form className="inline-form" onSubmit={handleAddCycle} style={{ marginTop: "var(--space-4)" }}>
+          <label className="field">
             Cycle Index
             <input
               type="number"
@@ -285,10 +270,9 @@ export default function PackDetail() {
               value={cycleIndex}
               onChange={(e) => setCycleIndex(e.target.value)}
               required
-              style={{ padding: "0.5rem", borderRadius: "6px", border: "1px solid #cbd5e1" }}
             />
           </label>
-          <label style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+          <label className="field">
             SOH (%)
             <input
               type="number"
@@ -299,19 +283,18 @@ export default function PackDetail() {
               value={sohPercent}
               onChange={(e) => setSohPercent(e.target.value)}
               required
-              style={{ padding: "0.5rem", borderRadius: "6px", border: "1px solid #cbd5e1" }}
             />
           </label>
           <button className="btn-primary" type="submit" disabled={busy}>추가</button>
-          <button type="button" disabled={busy} onClick={handlePredict} style={{ padding: "0.6rem 1rem", borderRadius: "6px", cursor: "pointer" }}>
+          <button type="button" disabled={busy} onClick={handlePredict}>
             SOH 예측 실행
           </button>
         </form>
 
-        <hr style={{ margin: "1.5rem 0", border: "none", borderTop: "1px solid #e5e7eb" }} />
+        <hr className="divider" />
 
         <p className="hint-text">CSV 일괄 업로드 (헤더: cycle_index, soh_percent)</p>
-        <div className="inline-form" style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <div className="inline-form">
           <input ref={fileInputRef} type="file" accept=".csv" onChange={handleCsvSelect} />
           <button disabled={busy || !csvFile} onClick={handleCsvUpload}>CSV 업로드</button>
         </div>
@@ -319,27 +302,28 @@ export default function PackDetail() {
 
       {/* 사이클 이력 테이블 카드 */}
       <div className="card">
-        <h2 style={{ marginTop: 0 }}>사이클 이력 ({detail.cycle_logs.length})</h2>
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem" }}>
+        <h2>사이클 이력 ({detail.cycle_logs.length})</h2>
+        <div className="table-scroll">
+        <table>
           <thead>
-            <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
-              <th style={{ padding: "0.5rem" }}>Cycle</th>
-              <th style={{ padding: "0.5rem" }}>SOH (%)</th>
-              <th style={{ padding: "0.5rem" }}>측정 시각</th>
-              <th style={{ padding: "0.5rem" }}></th>
+            <tr>
+              <th scope="col">Cycle</th>
+              <th scope="col">SOH (%)</th>
+              <th scope="col">측정 시각</th>
+              <th scope="col"></th>
             </tr>
           </thead>
           <tbody>
             {detail.cycle_logs.map((log) => (
-              <tr key={log.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                <td style={{ padding: "0.5rem" }}>{log.cycle_index}</td>
-                <td style={{ padding: "0.5rem" }}>{log.soh_percent.toFixed(2)}%</td>
-                <td style={{ padding: "0.5rem" }}>{new Date(log.measured_at).toLocaleString()}</td>
-                <td style={{ padding: "0.5rem", textAlign: "right" }}>
-                  <button 
-                    disabled={busy} 
+              <tr key={log.id}>
+                <td className="num">{log.cycle_index}</td>
+                <td className="num">{log.soh_percent.toFixed(2)}%</td>
+                <td className="hint-text">{new Date(log.measured_at).toLocaleString()}</td>
+                <td style={{ textAlign: "right" }}>
+                  <button
+                    className="btn-danger-quiet"
+                    disabled={busy}
                     onClick={() => handleDeleteCycle(log.id)}
-                    style={{ backgroundColor: "transparent", color: "#ef4444", border: "none", cursor: "pointer" }}
                   >
                     삭제
                   </button>
@@ -348,13 +332,14 @@ export default function PackDetail() {
             ))}
             {detail.cycle_logs.length === 0 && (
               <tr>
-                <td colSpan={4} style={{ padding: "1.5rem", textAlign: "center", color: "#64748b" }}>
+                <td colSpan={4} className="empty-cell">
                   등록된 사이클 로그가 없습니다. 위에서 직접 추가하거나 CSV를 업로드하세요.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
