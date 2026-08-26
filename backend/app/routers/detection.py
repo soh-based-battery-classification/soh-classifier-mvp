@@ -1,10 +1,10 @@
 """비전(YOLO) 브랜치 라우터.
 
-`/detect`가 이미지를 업로드받아 PartDetector(YOLO)로 부품을 탐지하고, 그 결과를
-visual_grading.estimate_severity_from_detections으로 심각도로 변환해 등급 오버라이드
-로직에 반영한다. 이 심각도 변환 규칙은 아직 임시 규칙(visual_grading.py 주석 참고)
-이므로, `/visual-severity`로 직접 지정해 오버라이드 로직만 따로 테스트하는 것도
-계속 지원한다."""
+`/detect`가 이미지를 업로드받아 PartDetector(YOLO)로 외관 결함(swelling/leak/
+corrosion)을 탐지하고, 그 결과를 visual_grading.estimate_severity_from_detections
+으로 심각도로 변환해 등급 오버라이드 로직에 반영한다. `/visual-severity`는
+심각도를 사람이 직접 지정해 오버라이드 로직만 따로 테스트할 수 있도록 남겨둔
+경로로, `/detect`와 별개로 계속 지원한다."""
 
 from __future__ import annotations
 

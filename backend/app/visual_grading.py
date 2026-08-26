@@ -1,8 +1,9 @@
 """비전(YOLO) 브랜치 심각도 + SOH 등급 -> 최종 등급 오버라이드 로직.
 
-architecture 문서 4-1장의 매트릭스를 그대로 구현. YOLO 추론 서비스가 아직 붙기 전
-(Phase 2 이전)에는 API 호출자가 visual_severity를 직접 지정해 오버라이드 로직을
-테스트할 수 있다.
+architecture 문서 4-1장의 매트릭스를 그대로 구현. `POST /detect`가 YOLO 결함탐지
+결과로부터 estimate_severity_from_detections()를 호출해 visual_severity를 자동
+산출하며, `PUT /visual-severity`로 API 호출자가 값을 직접 지정해 오버라이드 로직만
+따로 테스트하는 경로도 계속 지원한다.
 """
 
 from __future__ import annotations
@@ -33,8 +34,9 @@ class _HasClassAndConfidence(Protocol):
 def estimate_severity_from_detections(detections: Iterable[_HasClassAndConfidence]) -> str:
     """실제 손상탐지(swelling/leak/corrosion) 결과로부터 visual_severity 산출.
 
-    기존 부품탐지 기반 placeholder를 실제 손상탐지 모델로 교체한 버전.
-    (yolo_best.pt 를 swelling/leak/corrosion 을 학습한 가중치로 교체했다는 전제)
+    배포 중인 yolo_best.pt는 swelling/leak/corrosion 3클래스로 학습된 가중치
+    (yolo_model_meta.json 참고)이며, 초기의 부품탐지 기반 placeholder 규칙은 이
+    함수로 완전히 대체됐다.
 
     우선순위:
       1) swelling 또는 leak 이 하나라도 confidence>=MIN_CONFIDENCE 로 탐지됨
