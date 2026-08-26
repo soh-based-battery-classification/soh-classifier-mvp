@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""YOLOv8 기반 배터리 팩 부품 탐지 모델 전이학습 스크립트.
+"""YOLOv8 부품탐지 전이학습 스크립트 — v1 프로토타입, 지금은 안 씀.
 
-145장/7클래스(Screw, Nut, Bolt, Cable, Aluminum-frame, Battery Module, Bus-bar)의
-작은 데이터셋이므로 scratch 학습이 아닌 사전학습 체크포인트 기반 전이학습을 쓴다.
-CPU 추론을 전제로 architecture 문서 5-1장의 비용 최적화 방향에 맞춰 가장 가벼운
-yolov8n 체크포인트를 기본값으로 사용한다.
+145장/7클래스(Screw, Nut, Bolt, Cable, Aluminum-frame, Battery Module,
+Bus-bar)짜리 작은 데이터셋이라 scratch 학습 대신 사전학습 체크포인트 기반
+전이학습을 썼다. CPU 추론이 전제라(architecture 문서 5-1장 비용 최적화 방향)
+제일 가벼운 yolov8n 체크포인트를 기본값으로 씀.
+
+주의: 지금 서비스에 붙어있는 가중치(yolo_model_meta.json의
+yolov8n_ev_battery_defect_v5_noleak, swelling/leak/corrosion 3클래스)는 이
+스크립트로 학습한 게 아니라 다른 파이프라인(synthetic 데이터 증강 포함, 이
+저장소엔 없음)에서 나온 거다. 이 스크립트는 최초 프로토타입이었던 부품탐지(v1)
+모델 학습용이라 지금은 안 돌린다 — 기록으로만 남겨둠.
 
 실행 전: `python -m training.download_vision_dataset`로 데이터셋을 먼저 받아야 한다.
 

@@ -1,8 +1,9 @@
-"""비전(YOLO) 브랜치 심각도 + SOH 등급 -> 최종 등급 오버라이드 로직.
+"""비전(YOLO) 심각도 + SOH 등급 -> 최종 등급 오버라이드.
 
-architecture 문서 4-1장의 매트릭스를 그대로 구현. YOLO 추론 서비스가 아직 붙기 전
-(Phase 2 이전)에는 API 호출자가 visual_severity를 직접 지정해 오버라이드 로직을
-테스트할 수 있다.
+architecture 문서 4-1장 매트릭스 그대로 구현한 것. `/detect`가 결함탐지 결과로
+estimate_severity_from_detections()를 호출해서 visual_severity를 자동으로
+정하고, `/visual-severity`로는 그 값을 직접 찍어넣을 수도 있다 (오버라이드
+로직만 따로 테스트하고 싶을 때 쓰라고 남겨둠).
 """
 
 from __future__ import annotations
@@ -31,18 +32,16 @@ class _HasClassAndConfidence(Protocol):
 
 
 def estimate_severity_from_detections(detections: Iterable[_HasClassAndConfidence]) -> str:
-    """실제 손상탐지(swelling/leak/corrosion) 결과로부터 visual_severity 산출.
+    """결함탐지(swelling/leak/corrosion) 결과 -> visual_severity.
 
-    기존 부품탐지 기반 placeholder를 실제 손상탐지 모델로 교체한 버전.
-    (yolo_best.pt 를 swelling/leak/corrosion 을 학습한 가중치로 교체했다는 전제)
+    yolo_best.pt가 이 세 클래스로 학습돼 있어서(yolo_model_meta.json 참고),
+    예전 부품탐지 기반 placeholder 규칙은 이걸로 완전히 갈아치웠다.
 
-    우선순위:
-      1) swelling 또는 leak 이 하나라도 confidence>=MIN_CONFIDENCE 로 탐지됨
-         -> CRITICAL (화재/누출 위험, SOH 무관하게 최종등급 D로 깎임)
-      2) corrosion 만 confidence>=MIN_CONFIDENCE 로 탐지됨
-         -> MODERATE
-      3) 결함 없음 또는 전부 confidence 미달
-         -> OK
+    규칙:
+      - swelling/leak 중 하나라도 confidence>=MIN_CONFIDENCE로 잡히면 CRITICAL
+        (화재/누출 위험이라 SOH 상관없이 최종등급 D로 깎임)
+      - corrosion만 잡히면 MODERATE
+      - 그 외(결함 없음 / confidence 미달)는 OK
     """
     detections = list(detections)
 
