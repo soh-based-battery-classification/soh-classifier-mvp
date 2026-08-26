@@ -1,12 +1,11 @@
-"""YOLO 외관 결함 탐지 추론 래퍼.
+"""YOLO 결함탐지 추론 래퍼.
 
-학습된 YOLO 가중치(yolo_best.pt)와 클래스 정보(yolo_model_meta.json)가 MODEL_DIR에
-있으면 로드해서 실제 추론을 수행한다. 현재 배포된 가중치(model_version:
-yolov8n_ev_battery_defect_v5_noleak)는 배터리 팩 부품이 아니라 외관 결함
-(swelling/leak/corrosion) 3종을 탐지하도록 학습됐다 — 탐지 결과를 손상 심각도로
-해석하는 규칙은 visual_grading.estimate_severity_from_detections 쪽에 별도로 있다.
-클래스 자체는 yolo_model_meta.json에서 로드하므로 가중치를 교체해도 이 파일은
-그대로 재사용 가능하다.
+MODEL_DIR에 yolo_best.pt + yolo_model_meta.json이 있으면 로드해서 추론한다.
+지금 붙어있는 가중치는 배터리 팩 부품이 아니라 외관 결함(swelling/leak/
+corrosion) 세 가지를 잡도록 학습된 거다 — 탐지 결과를 심각도로 바꾸는 규칙은
+visual_grading.estimate_severity_from_detections에 따로 있다. 클래스 목록은
+yolo_model_meta.json에서 읽어오니까 가중치만 바꿔치기해도 이 파일은 그대로 써도
+된다.
 """
 
 from __future__ import annotations

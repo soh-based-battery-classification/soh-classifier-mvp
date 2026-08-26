@@ -1,13 +1,13 @@
-"""EV 배터리 팩 부품 탐지용 Roboflow 데이터셋 다운로드 스크립트 (v1 프로토타입, 현재 미사용).
+"""EV 배터리 팩 부품 탐지용 Roboflow 데이터셋 다운로드 스크립트 — v1 프로토타입, 지금은 안 씀.
 
 Roboflow Universe의 공개 데이터셋(mtech-project-ohj8a/ev-battery-pack, 145장,
 7클래스: Screw/Nut/Bolt/Cable/Aluminum-frame/Battery Module/Bus-bar)을
 YOLOv8 포맷으로 받아온다. `train_yolo.py`가 이 스크립트의 TARGET_DIR을 그대로
-import해서 쓰므로, 두 스크립트의 데이터 경로는 항상 일치한다.
+import해서 쓰기 때문에 두 스크립트의 데이터 경로는 항상 맞아떨어진다.
 
-주의: 현재 서비스에 배포된 결함탐지(swelling/leak/corrosion) 가중치는 이 데이터셋이
-아니라 별도 synthetic 데이터 파이프라인으로 학습됐다. 이 스크립트는 최초
-프로토타입이었던 부품탐지(v1) 모델용이며 지금은 쓰지 않는다 — 참고용으로만 남겨둔다.
+주의: 지금 서비스에 붙어있는 결함탐지(swelling/leak/corrosion) 가중치는 이
+데이터셋이 아니라 별도 synthetic 데이터 파이프라인으로 학습된 거다. 이 스크립트는
+최초 프로토타입이었던 부품탐지(v1) 모델용이라 지금은 안 쓴다 — 기록으로만 남겨둠.
 
 이 데이터셋 버전(v1)은 Roboflow에 100% train으로만 게시돼 valid/test 스플릿이
 없다(435장 전부 train, README.roboflow.txt에 명시). 그대로 두면 YOLO 학습이 val
